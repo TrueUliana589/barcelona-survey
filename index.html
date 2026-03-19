@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuesta Arquitecto - Barcelona Land Capacity</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #f5f5f5;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  min-height: 100vh;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #fff;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.progress-bar-bg {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2196F3, #1976D2);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-label {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 24px;
+}
+.header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111;
+}
+.lang-toggle {
+  display: flex;
+  gap: 4px;
+}
+.lang-toggle button {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.lang-toggle button.active {
+  background: #1976D2;
+  color: #fff;
+  border-color: #1976D2;
+}
+
+/* ===== BILINGUAL TEXT ===== */
+.lang-es {
+  font-size: 16px;
+  color: #1a1a1a;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 2px;
+}
+.lang-en {
+  font-size: 13px;
+  color: #8c8c8c;
+  font-weight: 400;
+  line-height: 1.3;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+h2 .lang-es { font-size: 22px; color: #111; }
+h2 .lang-en { font-size: 16px; color: #999; }
+.option .lang-es { font-size: 15px; color: #222; }
+.option .lang-en { font-size: 12px; color: #aaa; }
+.hint .lang-es { font-size: 14px; color: #555; }
+.hint .lang-en { font-size: 11px; color: #bbb; }
+
+/* Language modes */
+body.hide-en .lang-en { display: none; }
+body.en-primary .lang-es { font-size: 13px; color: #8c8c8c; font-style: italic; font-weight: 400; }
+body.en-primary .lang-en { font-size: 16px; color: #1a1a1a; font-style: normal; font-weight: 500; }
+body.en-primary h2 .lang-es { font-size: 16px; color: #999; }
+body.en-primary h2 .lang-en { font-size: 22px; color: #111; }
+
+/* ===== SECTIONS ===== */
+.section { display: none; }
+.section.active { display: block; }
+.section-title { margin-bottom: 24px; }
+
+/* ===== ALGORITHM HINT BOX ===== */
+.algo-hint {
+  background: #e8f4fd;
+  border-left: 4px solid #2196F3;
+  padding: 12px 16px;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 20px;
+}
+
+/* ===== FORM ELEMENTS ===== */
+.question-block {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.question-block:last-child { border-bottom: none; }
+
+input[type="text"], input[type="email"], input[type="number"], textarea, select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #1976D2;
+  box-shadow: 0 0 0 2px rgba(25,118,210,0.15);
+}
+textarea { min-height: 100px; resize: vertical; }
+
+/* ===== SLIDER ===== */
+.slider-container {
+  margin: 12px 0;
+  position: relative;
+}
+.slider-container input[type="range"] {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #e0e0e0;
+  border-radius: 3px;
+  outline: none;
+}
+.slider-container input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1976D2;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.slider-container input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1976D2;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.slider-value {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1976D2;
+  min-width: 60px;
+  text-align: center;
+}
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+}
+.algo-default-marker {
+  font-size: 12px;
+  color: #2196F3;
+  margin-top: 4px;
+}
+
+/* ===== RADIO & CHECKBOX ===== */
+.radio-group, .checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0;
+}
+.radio-option, .checkbox-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.radio-option:hover, .checkbox-option:hover {
+  border-color: #1976D2;
+  background: #f8fbff;
+}
+.radio-option input, .checkbox-option input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.option-text { flex: 1; }
+
+/* ===== TRIPLE SLIDER (MIX) ===== */
+.mix-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+.mix-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mix-label { width: 40px; font-weight: 600; font-size: 14px; }
+.mix-row input[type="range"] { flex: 1; }
+.mix-value { width: 50px; text-align: right; font-weight: 600; color: #1976D2; }
+.mix-total {
+  text-align: center;
+  font-size: 14px;
+  padding: 8px;
+  border-radius: 4px;
+}
+.mix-total.valid { color: #2e7d32; background: #e8f5e9; }
+.mix-total.invalid { color: #c62828; background: #ffebee; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-primary {
+  background: #1976D2;
+  color: #fff;
+}
+.btn-primary:hover { background: #1565C0; }
+.btn-secondary {
+  background: #fff;
+  color: #666;
+  border: 1px solid #ccc;
+}
+.btn-secondary:hover { background: #f5f5f5; }
+.btn-success {
+  background: #2e7d32;
+  color: #fff;
+}
+.btn-success:hover { background: #1b5e20; }
+
+.btn-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+/* ===== NAVIGATION ===== */
+.nav-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* ===== CARD LAYOUT (CLAU / Parcel) ===== */
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 20px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.card-header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.card-meta {
+  font-size: 14px;
+  color: #666;
+  margin: 4px 0;
+}
+
+/* ===== PARAMETER TABLE ===== */
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+.param-table th, .param-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+.param-table th {
+  background: #f9f9f9;
+  font-weight: 600;
+  font-size: 13px;
+  color: #555;
+}
+
+/* ===== MAP ===== */
+.map-container {
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 16px 0;
+  border: 1px solid #e0e0e0;
+}
+
+/* ===== CARD NAVIGATION ===== */
+.card-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+.card-counter {
+  font-size: 14px;
+  color: #888;
+}
+
+/* ===== REVIEW SECTION ===== */
+.review-section {
+  margin-bottom: 24px;
+}
+.review-section h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #333;
+}
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+.review-item:nth-child(even) { background: #fafafa; }
+.review-key { color: #555; flex: 1; }
+.review-value { color: #1a1a1a; font-weight: 500; flex: 1; text-align: right; }
+.edit-link {
+  font-size: 13px;
+  color: #1976D2;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ===== CONDITIONAL QUESTION ===== */
+.conditional { display: none; margin-top: 12px; padding-left: 20px; border-left: 3px solid #e0e0e0; }
+.conditional.visible { display: block; }
+
+/* ===== SUBSECTION ===== */
+.subsection {
+  margin-bottom: 32px;
+  padding: 20px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+.subsection-title { margin-bottom: 16px; }
+
+/* ===== CALCULATION SUMMARY ===== */
+.calc-summary {
+  background: #f0f7ff;
+  border: 1px solid #bbdefb;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* ===== ERROR/INFO BOX ===== */
+.error-box {
+  background: #ffebee;
+  border: 1px solid #ef9a9a;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  color: #c62828;
+}
+.info-box {
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+}
+
+/* ===== WELCOME ===== */
+.welcome-logo {
+  text-align: center;
+  margin: 32px 0;
+}
+.welcome-logo h1 { font-size: 28px; color: #111; margin-bottom: 8px; }
+.welcome-logo p { color: #666; font-size: 15px; }
+.welcome-form {
+  max-width: 400px;
+  margin: 32px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.welcome-form label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ===== PART HEADER ===== */
+.part-header {
+  background: linear-gradient(135deg, #e3f2fd, #f0f7ff);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.part-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1976D2;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  .header { flex-direction: column; gap: 12px; }
+  .nav-footer { flex-direction: column; gap: 12px; }
+  .btn-group { flex-direction: column; }
+  .btn { width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar-wrapper">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">0%</div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>Encuesta Arquitecto</h1>
+  <div class="lang-toggle" id="langToggle">
+    <button class="active" data-lang="both">ES+EN</button>
+    <button data-lang="es">Solo ES</button>
+    <button data-lang="en">EN only</button>
+  </div>
+</div>
+
+<!-- ==================== SECTION 0: WELCOME ==================== -->
+<div class="section active" id="section-0">
+  <div class="welcome-logo">
+    <h1>
+      <span class="lang-es">Encuesta de Validaci&oacute;n de Capacidad Residencial</span>
+      <br>
+      <span class="lang-en">Residential Capacity Validation Survey</span>
+    </h1>
+    <p>
+      <span class="lang-es">Barcelona - An&aacute;lisis de parcelas y par&aacute;metros urban&iacute;sticos</span><br>
+      <span class="lang-en">Barcelona - Parcel analysis and urbanistic parameters</span>
+    </p>
+  </div>
+
+  <div class="algo-hint" style="max-width:500px; margin: 0 auto 24px auto;">
+    <div class="hint">
+      <p class="lang-es">Esta encuesta le presentar&aacute; los par&aacute;metros que utiliza nuestro algoritmo de c&aacute;lculo de capacidad residencial y le pedir&aacute; su opini&oacute;n experta. Tiempo estimado: 1.5&ndash;2 horas (puede pausar y continuar).</p>
+      <p class="lang-en">This survey will present the parameters used by our residential capacity algorithm and ask for your expert opinion. Estimated time: 1.5&ndash;2 hours (you can pause and resume).</p>
+    </div>
+  </div>
+
+  <div class="welcome-form">
+    <div class="form-group">
+      <label>
+        <span class="lang-es">Nombre / </span>
+        <span class="lang-en">Name</span>
+      </label>
+      <input type="text" id="respondent-name" placeholder="Su nombre / Your name">
+    </div>
+    <div class="form-group">
+      <label>
+        <span class="lang-es">Email / </span>
+        <span class="lang-en">Email</span>
+      </label>
+      <input type="email" id="respondent-email" placeholder="correo@ejemplo.com">
+    </div>
+    <button class="btn btn-primary" onclick="startSurvey()" style="margin-top:12px;">
+      Comenzar / Start
+    </button>
+  </div>
+</div>
+
+<!-- ==================== SECTION 1: PART 1 - GENERAL PARAMETERS ==================== -->
+<div class="section" id="section-1">
+  <div class="part-header">
+    <div class="part-number">Parte 1 / Part 1</div>
+    <h2>
+      <span class="lang-es">Par&aacute;metros generales</span><br>
+      <span class="lang-en">General parameters</span>
+    </h2>
+  </div>
+
+  <!-- Q1: Apartment Sizes -->
+  <div class="subsection" id="subsection-q1">
+    <div class="subsection-title">
+      <h2>
+        <span class="lang-es">Q1. Tama&ntilde;os de viviendas</span><br>
+        <span class="lang-en">Apartment sizes</span>
+      </h2>
+    </div>
+    <div class="algo-hint">
+      <div class="hint">
+        <p class="lang-es">El algoritmo utiliza superficies medias: T1=50 m&sup2;, T2=65 m&sup2;, T3=85 m&sup2;.</p>
+        <p class="lang-en">The algorithm uses average areas: T1=50 m&sup2;, T2=65 m&sup2;, T3=85 m&sup2;.</p>
+      </div>
+    </div>
+
+    <div class="question-block" id="q1_1">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Cu&aacute;l es el tama&ntilde;o medio de un piso T1 (1 dormitorio) que considera realista para nuevos proyectos en Barcelona?</p>
+        <p class="lang-en">What average T1 apartment size (1 bedroom) do you consider realistic for new projects in Barcelona?</p>
+      </div>
+      <div class="slider-container">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" min="35" max="60" step="5" value="50" data-key="q1_1" data-default="50" oninput="updateSlider(this)">
+          <span class="slider-value" id="val-q1_1">50 m&sup2;</span>
+        </div>
+        <div class="slider-labels"><span>35 m&sup2;</span><span>60 m&sup2;</span></div>
+        <div class="algo-default-marker">&#9650; Algoritmo / Algorithm: 50 m&sup2;</div>
+      </div>
+    </div>
+
+    <div class="question-block" id="q1_2">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Tama&ntilde;o medio de un piso T2 (2 dormitorios)?</p>
+        <p class="lang-en">Average T2 size (2 bedrooms)?</p>
+      </div>
+      <div class="slider-container">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" min="50" max="90" step="5" value="65" data-key="q1_2" data-default="65" oninput="updateSlider(this)">
+          <span class="slider-value" id="val-q1_2">65 m&sup2;</span>
+        </div>
+        <div class="slider-labels"><span>50 m&sup2;</span><span>90 m&sup2;</span></div>
+        <div class="algo-default-marker">&#9650; Algoritmo / Algorithm: 65 m&sup2;</div>
+      </div>
+    </div>
+
+    <div class="question-block" id="q1_3">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Tama&ntilde;o medio de un piso T3 (3 dormitorios)?</p>
+        <p class="lang-en">Average T3 size (3 bedrooms)?</p>
+      </div>
+      <div class="slider-container">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" min="70" max="120" step="5" value="85" data-key="q1_3" data-default="85" oninput="updateSlider(this)">
+          <span class="slider-value" id="val-q1_3">85 m&sup2;</span>
+        </div>
+        <div class="slider-labels"><span>70 m&sup2;</span><span>120 m&sup2;</span></div>
+        <div class="algo-default-marker">&#9650; Algoritmo / Algorithm: 85 m&sup2;</div>
+      </div>
+    </div>
+
+    <div class="question-block" id="q1_4">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Cu&aacute;l es la superficie m&iacute;nima de vivienda que aplica en sus proyectos?</p>
+        <p class="lang-en">What is the minimum apartment area you apply in your projects?</p>
+      </div>
+      <input type="number" data-key="q1_4" placeholder="m&sup2;" min="20" max="80" style="max-width:200px;" oninput="saveAnswer(this.dataset.key, this.value)">
+    </div>
+  </div>
+
+  <!-- Q2: Apartment Mix -->
+  <div class="subsection" id="subsection-q2">
+    <div class="subsection-title">
+      <h2>
+        <span class="lang-es">Q2. Mix de viviendas</span><br>
+        <span class="lang-en">Apartment mix</span>
+      </h2>
+    </div>
+    <div class="algo-hint">
+      <div class="hint">
+        <p class="lang-es">El algoritmo: 20% T1, 45% T2, 35% T3.</p>
+        <p class="lang-en">The algorithm: 20% T1, 45% T2, 35% T3.</p>
+      </div>
+    </div>
+
+    <div class="question-block" id="q2_1">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Qu&eacute; distribuci&oacute;n de tipos de vivienda es t&iacute;pica en sus proyectos?</p>
+        <p class="lang-en">What apartment type distribution is typical in your projects?</p>
+      </div>
+      <div class="mix-sliders">
+        <div class="mix-row">
+          <span class="mix-label">T1</span>
+          <input type="range" min="0" max="100" step="5" value="20" data-mix="t1" oninput="updateMix()">
+          <span class="mix-value" id="mix-t1">20%</span>
+        </div>
+        <div class="mix-row">
+          <span class="mix-label">T2</span>
+          <input type="range" min="0" max="100" step="5" value="45" data-mix="t2" oninput="updateMix()">
+          <span class="mix-value" id="mix-t2">45%</span>
+        </div>
+        <div class="mix-row">
+          <span class="mix-label">T3</span>
+          <input type="range" min="0" max="100" step="5" value="35" data-mix="t3" oninput="updateMix()">
+          <span class="mix-value" id="mix-t3">35%</span>
+        </div>
+        <div class="mix-total valid" id="mix-total">Total: 100% &#10003;</div>
+      </div>
+    </div>
+
+    <div class="question-block" id="q2_2">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Cambia el mix seg&uacute;n el distrito?</p>
+        <p class="lang-en">Does the mix change by district?</p>
+      </div>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="q2_2" value="si" onchange="saveAnswer('q2_2', this.value); toggleConditional('q2_3_cond', this.value==='si')">
+          <div class="option-text"><span class="lang-es">S&iacute;</span> <span class="lang-en">/ Yes</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q2_2" value="no" onchange="saveAnswer('q2_2', this.value); toggleConditional('q2_3_cond', false)">
+          <div class="option-text"><span class="lang-es">No</span> <span class="lang-en">/ No</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q2_2" value="depende" onchange="saveAnswer('q2_2', this.value); toggleConditional('q2_3_cond', true)">
+          <div class="option-text"><span class="lang-es">Depende del tama&ntilde;o del proyecto</span> <span class="lang-en">/ Depends on project size</span></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="conditional" id="q2_3_cond">
+      <div class="question-block" id="q2_3">
+        <div class="bilingual">
+          <p class="lang-es">Si s&iacute;, &iquest;para qu&eacute; distritos es diferente?</p>
+          <p class="lang-en">If yes, for which districts does it differ?</p>
+        </div>
+        <textarea data-key="q2_3" placeholder="Describa los distritos / Describe the districts..." oninput="saveAnswer(this.dataset.key, this.value)"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3: Common Areas -->
+  <div class="subsection" id="subsection-q3">
+    <div class="subsection-title">
+      <h2>
+        <span class="lang-es">Q3. Zonas comunes</span><br>
+        <span class="lang-en">Common areas</span>
+      </h2>
+    </div>
+    <div class="algo-hint">
+      <div class="hint">
+        <p class="lang-es">El algoritmo: 20% para edificios plurifamiliares.</p>
+        <p class="lang-en">The algorithm: 20% for multi-family buildings.</p>
+      </div>
+    </div>
+
+    <div class="question-block" id="q3_1">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Qu&eacute; porcentaje de la SBA suelen ocupar las zonas comunes (escaleras, ascensores, pasillos, vest&iacute;bulo)?</p>
+        <p class="lang-en">What percentage of GFA do common areas typically occupy (stairs, elevators, corridors, lobby)?</p>
+      </div>
+      <div class="slider-container">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" min="10" max="30" step="1" value="20" data-key="q3_1" data-default="20" oninput="updateSlider(this)">
+          <span class="slider-value" id="val-q3_1">20%</span>
+        </div>
+        <div class="slider-labels"><span>10%</span><span>30%</span></div>
+        <div class="algo-default-marker">&#9650; Algoritmo / Algorithm: 20%</div>
+      </div>
+    </div>
+
+    <div class="question-block" id="q3_2">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Es diferente este porcentaje seg&uacute;n la altura del edificio?</p>
+        <p class="lang-en">Does this percentage differ by building height?</p>
+      </div>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="q3_2" value="no" onchange="saveAnswer('q3_2', this.value); toggleConditional('q3_2_cond', false)">
+          <div class="option-text"><span class="lang-es">No</span> <span class="lang-en">/ No</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q3_2" value="si" onchange="saveAnswer('q3_2', this.value); toggleConditional('q3_2_cond', true)">
+          <div class="option-text"><span class="lang-es">S&iacute;</span> <span class="lang-en">/ Yes</span></div>
+        </label>
+      </div>
+      <div class="conditional" id="q3_2_cond">
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px;">
+          <div class="form-group">
+            <label><span class="lang-es">Hasta 4 plantas / </span><span class="lang-en">Up to 4 floors</span></label>
+            <input type="number" data-key="q3_2_low" placeholder="%" min="5" max="40" style="width:100px;" oninput="saveAnswer(this.dataset.key, this.value)">
+          </div>
+          <div class="form-group">
+            <label><span class="lang-es">5+ plantas / </span><span class="lang-en">5+ floors</span></label>
+            <input type="number" data-key="q3_2_high" placeholder="%" min="5" max="40" style="width:100px;" oninput="saveAnswer(this.dataset.key, this.value)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="question-block" id="q3_3">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Incluye el aparcamiento subterr&aacute;neo en el c&aacute;lculo de SBA?</p>
+        <p class="lang-en">Do you include underground parking in the GFA calculation?</p>
+      </div>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="q3_3" value="si" onchange="saveAnswer('q3_3', this.value)">
+          <div class="option-text"><span class="lang-es">S&iacute;</span> <span class="lang-en">/ Yes</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q3_3" value="no" onchange="saveAnswer('q3_3', this.value)">
+          <div class="option-text"><span class="lang-es">No</span> <span class="lang-en">/ No</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q3_3" value="depende" onchange="saveAnswer('q3_3', this.value)">
+          <div class="option-text"><span class="lang-es">Depende</span> <span class="lang-en">/ Depends</span></div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4: Commercial Ground Floor -->
+  <div class="subsection" id="subsection-q4">
+    <div class="subsection-title">
+      <h2>
+        <span class="lang-es">Q4. Planta baja comercial</span><br>
+        <span class="lang-en">Commercial ground floor</span>
+      </h2>
+    </div>
+    <div class="algo-hint">
+      <div class="hint">
+        <p class="lang-es">El algoritmo asume planta baja comercial para CLAU 13a, 13b, 13E.</p>
+        <p class="lang-en">The algorithm assumes commercial ground floor for CLAU 13a, 13b, 13E.</p>
+      </div>
+    </div>
+
+    <div class="question-block" id="q4_1">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;En qu&eacute; zonas suele proyectar planta baja comercial?</p>
+        <p class="lang-en">In which zones do you typically design a commercial ground floor?</p>
+      </div>
+      <div class="checkbox-group">
+        <label class="checkbox-option"><input type="checkbox" data-key="q4_1" value="13a" onchange="saveCheckboxGroup('q4_1')"><div class="option-text">CLAU 13a</div></label>
+        <label class="checkbox-option"><input type="checkbox" data-key="q4_1" value="13b" onchange="saveCheckboxGroup('q4_1')"><div class="option-text">CLAU 13b</div></label>
+        <label class="checkbox-option"><input type="checkbox" data-key="q4_1" value="13E" onchange="saveCheckboxGroup('q4_1')"><div class="option-text">CLAU 13E (Eixample)</div></label>
+        <label class="checkbox-option"><input type="checkbox" data-key="q4_1" value="eixample" onchange="saveCheckboxGroup('q4_1')"><div class="option-text">Eixample</div></label>
+        <label class="checkbox-option"><input type="checkbox" data-key="q4_1" value="fachada_15" onchange="saveCheckboxGroup('q4_1')">
+          <div class="option-text"><span class="lang-es">Todos con fachada &gt;15m</span> <span class="lang-en">/ All with frontage &gt;15m</span></div>
+        </label>
+        <label class="checkbox-option"><input type="checkbox" data-key="q4_1" value="siempre" onchange="saveCheckboxGroup('q4_1')">
+          <div class="option-text"><span class="lang-es">Siempre</span> <span class="lang-en">/ Always</span></div>
+        </label>
+        <label class="checkbox-option"><input type="checkbox" data-key="q4_1" value="nunca" onchange="saveCheckboxGroup('q4_1')">
+          <div class="option-text"><span class="lang-es">Nunca</span> <span class="lang-en">/ Never</span></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="question-block" id="q4_2">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Qu&eacute; altura de planta baja aplica con uso comercial?</p>
+        <p class="lang-en">What ground floor height do you apply for commercial use?</p>
+      </div>
+      <div class="slider-container">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" min="3.5" max="5.0" step="0.1" value="4.0" data-key="q4_2" data-default="4.0" oninput="updateSlider(this, ' m')">
+          <span class="slider-value" id="val-q4_2">4.0 m</span>
+        </div>
+        <div class="slider-labels"><span>3.5 m</span><span>5.0 m</span></div>
+      </div>
+    </div>
+
+    <div class="question-block" id="q4_3">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Qu&eacute; proporci&oacute;n de la planta baja suele ser comercial?</p>
+        <p class="lang-en">What proportion of the ground floor is typically commercial?</p>
+      </div>
+      <div class="slider-container">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" min="50" max="100" step="5" value="80" data-key="q4_3" data-default="80" oninput="updateSlider(this)">
+          <span class="slider-value" id="val-q4_3">80%</span>
+        </div>
+        <div class="slider-labels"><span>50%</span><span>100%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q5: Density Rule -->
+  <div class="subsection" id="subsection-q5">
+    <div class="subsection-title">
+      <h2>
+        <span class="lang-es">Q5. Regla de densidad Art. 323</span><br>
+        <span class="lang-en">Density rule Art. 323</span>
+      </h2>
+    </div>
+    <div class="algo-hint">
+      <div class="hint">
+        <p class="lang-es">El algoritmo: m&aacute;x. viviendas = SBA / 80 m&sup2;.</p>
+        <p class="lang-en">The algorithm: max apartments = GFA / 80 m&sup2;.</p>
+      </div>
+    </div>
+
+    <div class="question-block" id="q5_1">
+      <div class="bilingual">
+        <p class="lang-es">Seg&uacute;n su experiencia, &iquest;la regla de 80 m&sup2; (Art. 323) suele ser el factor limitante?</p>
+        <p class="lang-en">In your experience, is the 80 m&sup2; rule (Art. 323) usually the limiting factor?</p>
+      </div>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="q5_1" value="siempre" onchange="saveAnswer('q5_1', this.value)">
+          <div class="option-text"><span class="lang-es">S&iacute;, siempre</span> <span class="lang-en">/ Yes, always</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q5_1" value="a_menudo" onchange="saveAnswer('q5_1', this.value)">
+          <div class="option-text"><span class="lang-es">A menudo</span> <span class="lang-en">/ Often</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q5_1" value="rara_vez" onchange="saveAnswer('q5_1', this.value)">
+          <div class="option-text"><span class="lang-es">Rara vez</span> <span class="lang-en">/ Rarely</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q5_1" value="depende_clau" onchange="saveAnswer('q5_1', this.value)">
+          <div class="option-text"><span class="lang-es">Depende de la CLAU</span> <span class="lang-en">/ Depends on the CLAU</span></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="question-block" id="q5_2">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Conoce casos en que el m&oacute;dulo de densidad difiere de 80 m&sup2;?</p>
+        <p class="lang-en">Do you know of cases where the density module differs from 80 m&sup2;?</p>
+      </div>
+      <textarea data-key="q5_2" placeholder="Describa / Describe..." oninput="saveAnswer(this.dataset.key, this.value)"></textarea>
+    </div>
+  </div>
+
+  <!-- Q6: HPO (Social Housing) -->
+  <div class="subsection" id="subsection-q6">
+    <div class="subsection-title">
+      <h2>
+        <span class="lang-es">Q6. HPO (vivienda protegida)</span><br>
+        <span class="lang-en">Social housing (HPO)</span>
+      </h2>
+    </div>
+    <div class="algo-hint">
+      <div class="hint">
+        <p class="lang-es">El algoritmo: 30% de viviendas = HPO.</p>
+        <p class="lang-en">The algorithm: 30% of apartments = HPO.</p>
+      </div>
+    </div>
+
+    <div class="question-block" id="q6_1">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Se aplica siempre el 30% de HPO en nuevos proyectos?</p>
+        <p class="lang-en">Is the 30% HPO always applied in new projects?</p>
+      </div>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="q6_1" value="si" onchange="saveAnswer('q6_1', this.value); toggleConditional('q6_2_cond', false)">
+          <div class="option-text"><span class="lang-es">S&iacute;</span> <span class="lang-en">/ Yes</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q6_1" value="excepciones" onchange="saveAnswer('q6_1', this.value); toggleConditional('q6_2_cond', true)">
+          <div class="option-text"><span class="lang-es">Hay excepciones</span> <span class="lang-en">/ There are exceptions</span></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="conditional" id="q6_2_cond">
+      <div class="question-block" id="q6_2">
+        <div class="bilingual">
+          <p class="lang-es">Si hay excepciones, &iquest;cu&aacute;les?</p>
+          <p class="lang-en">If there are exceptions, which ones?</p>
+        </div>
+        <textarea data-key="q6_2" placeholder="Describa / Describe..." oninput="saveAnswer(this.dataset.key, this.value)"></textarea>
+      </div>
+    </div>
+
+    <div class="question-block" id="q6_3">
+      <div class="bilingual">
+        <p class="lang-es">&iquest;Afecta el HPO a la tipolog&iacute;a (las viviendas HPO son de diferente tama&ntilde;o)?</p>
+        <p class="lang-en">Does HPO affect typology (are HPO apartments differently sized)?</p>
+      </div>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="q6_3" value="no" onchange="saveAnswer('q6_3', this.value); toggleConditional('q6_4_cond', false)">
+          <div class="option-text"><span class="lang-es">No</span> <span class="lang-en">/ No</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q6_3" value="mas_pequenas" onchange="saveAnswer('q6_3', this.value); toggleConditional('q6_4_cond', true)">
+          <div class="option-text"><span class="lang-es">S&iacute;, HPO suelen ser m&aacute;s peque&ntilde;as</span> <span class="lang-en">/ Yes, HPO tend to be smaller</span></div>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="q6_3" value="reguladas" onchange="saveAnswer('q6_3', this.value); toggleConditional('q6_4_cond', false)">
+          <div class="option-text"><span class="lang-es">S&iacute;, HPO est&aacute;n estrictamente reguladas</span> <span class="lang-en">/ Yes, HPO are strictly regulated</span></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="conditional" id="q6_4_cond">
+      <div class="question-block" id="q6_4">
+        <div class="bilingual">
+          <p class="lang-es">Si son m&aacute;s peque&ntilde;as, &iquest;en qu&eacute; porcentaje?</p>
+          <p class="lang-en">If smaller, by what percentage?</p>
+        </div>
+        <div class="slider-container">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <input type="range" min="0" max="30" step="1" value="10" data-key="q6_4" data-default="0" oninput="updateSlider(this)">
+            <span class="slider-value" id="val-q6_4">10%</span>
+          </div>
+          <div class="slider-labels"><span>0%</span><span>30%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="showSection(0)">&larr; <span class="lang-es">Volver</span> <span class="lang-en">/ Back</span></button>
+    <button class="btn btn-primary" onclick="showSection(2)"><span class="lang-es">Continuar</span> <span class="lang-en">/ Continue</span> &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== SECTION 2: PART 2 - CLAU CARDS ==================== -->
+<div class="section" id="section-2">
+  <div class="part-header">
+    <div class="part-number">Parte 2 / Part 2</div>
+    <h2>
+      <span class="lang-es">Par&aacute;metros por CLAU</span><br>
+      <span class="lang-en">Parameters by CLAU</span>
+    </h2>
+  </div>
+
+  <div class="algo-hint" style="margin-bottom:20px;">
+    <div class="hint">
+      <p class="lang-es">Revise los par&aacute;metros de cada zona CLAU. Puede confirmar o corregir los valores.</p>
+      <p class="lang-en">Review the parameters for each CLAU zone. You can confirm or correct the values.</p>
+    </div>
+  </div>
+
+  <div id="clau-card-container">
+    <div class="error-box" id="clau-loading">
+      <p class="lang-es">Cargando datos CLAU...</p>
+      <p class="lang-en">Loading CLAU data...</p>
+    </div>
+  </div>
+
+  <div class="card-nav" id="clau-nav" style="display:none;">
+    <button class="btn btn-secondary" onclick="prevClauCard()">&larr; <span class="lang-es">Anterior</span> <span class="lang-en">/ Previous</span></button>
+    <span class="card-counter" id="clau-counter"></span>
+    <button class="btn btn-secondary" onclick="nextClauCard()"><span class="lang-es">Siguiente</span> <span class="lang-en">/ Next</span> &rarr;</button>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="showSection(1)">&larr; <span class="lang-es">Parte 1</span> <span class="lang-en">/ Part 1</span></button>
+    <button class="btn btn-primary" onclick="showSection(3)"><span class="lang-es">Parte 3</span> <span class="lang-en">/ Part 3</span> &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== SECTION 3: PART 3 - PARCEL CARDS ==================== -->
+<div class="section" id="section-3">
+  <div class="part-header">
+    <div class="part-number">Parte 3 / Part 3</div>
+    <h2>
+      <span class="lang-es">Parcelas concretas</span><br>
+      <span class="lang-en">Specific parcels</span>
+    </h2>
+  </div>
+
+  <div class="algo-hint" style="margin-bottom:20px;">
+    <div class="hint">
+      <p class="lang-es">Revise parcelas individuales. Valore si el c&aacute;lculo del algoritmo es realista.</p>
+      <p class="lang-en">Review individual parcels. Assess whether the algorithm calculation is realistic.</p>
+    </div>
+  </div>
+
+  <div id="parcel-card-container">
+    <div class="error-box" id="parcel-loading">
+      <p class="lang-es">Cargando datos de parcelas...</p>
+      <p class="lang-en">Loading parcel data...</p>
+    </div>
+  </div>
+
+  <div class="card-nav" id="parcel-nav" style="display:none;">
+    <button class="btn btn-secondary" onclick="prevParcelCard()">&larr; <span class="lang-es">Anterior</span> <span class="lang-en">/ Previous</span></button>
+    <span class="card-counter" id="parcel-counter"></span>
+    <button class="btn btn-secondary" onclick="nextParcelCard()"><span class="lang-es">Siguiente</span> <span class="lang-en">/ Next</span> &rarr;</button>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="showSection(2)">&larr; <span class="lang-es">Parte 2</span> <span class="lang-en">/ Part 2</span></button>
+    <button class="btn btn-primary" onclick="showSection(4)"><span class="lang-es">Parte 4</span> <span class="lang-en">/ Part 4</span> &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== SECTION 4: PART 4 - OPEN QUESTIONS ==================== -->
+<div class="section" id="section-4">
+  <div class="part-header">
+    <div class="part-number">Parte 4 / Part 4</div>
+    <h2>
+      <span class="lang-es">Preguntas abiertas</span><br>
+      <span class="lang-en">Open questions</span>
+    </h2>
+  </div>
+
+  <div class="question-block">
+    <div class="bilingual">
+      <p class="lang-es">O.1 &iquest;Qu&eacute; tipos de parcelas en Barcelona se sobreestiman m&aacute;s frecuentemente en capacidad? &iquest;Por qu&eacute;?</p>
+      <p class="lang-en">Which types of parcels in Barcelona are most frequently overestimated in capacity? Why?</p>
+    </div>
+    <textarea data-key="o1" oninput="saveAnswer(this.dataset.key, this.value)"></textarea>
+  </div>
+
+  <div class="question-block">
+    <div class="bilingual">
+      <p class="lang-es">O.2 &iquest;Qu&eacute; restricciones normativas no contempla nuestro algoritmo?</p>
+      <p class="lang-en">What regulatory restrictions does our algorithm not account for?</p>
+    </div>
+    <textarea data-key="o2" oninput="saveAnswer(this.dataset.key, this.value)"></textarea>
+  </div>
+
+  <div class="question-block">
+    <div class="bilingual">
+      <p class="lang-es">O.3 &iquest;C&oacute;mo valora el realismo del enfoque &laquo;superficie x FAR &rarr; viviendas&raquo;? &iquest;Qu&eacute; enfoque es m&aacute;s preciso?</p>
+      <p class="lang-en">How do you rate the realism of the "area x FAR &rarr; apartments" approach? What approach is more accurate?</p>
+    </div>
+    <textarea data-key="o3" oninput="saveAnswer(this.dataset.key, this.value)"></textarea>
+  </div>
+
+  <div class="question-block">
+    <div class="bilingual">
+      <p class="lang-es">O.4 &iquest;Existen zonas de Barcelona donde la edificaci&oacute;n est&aacute; formalmente permitida pero es pr&aacute;cticamente imposible?</p>
+      <p class="lang-en">Are there zones in Barcelona where construction is formally permitted but practically impossible?</p>
+    </div>
+    <textarea data-key="o4" oninput="saveAnswer(this.dataset.key, this.value)"></textarea>
+  </div>
+
+  <div class="question-block">
+    <div class="bilingual">
+      <p class="lang-es">O.5 &iquest;Qu&eacute; datos ser&iacute;an m&aacute;s &uacute;tiles para mejorar la precisi&oacute;n del c&aacute;lculo?</p>
+      <p class="lang-en">What data would be most useful to improve calculation accuracy?</p>
+    </div>
+    <textarea data-key="o5" oninput="saveAnswer(this.dataset.key, this.value)"></textarea>
+  </div>
+
+  <div class="question-block">
+    <div class="bilingual">
+      <p class="lang-es">O.6 &iquest;Qu&eacute; distritos considera m&aacute;s prometedores actualmente para la construcci&oacute;n residencial?</p>
+      <p class="lang-en">Which districts do you consider most promising currently for residential construction?</p>
+    </div>
+    <textarea data-key="o6" oninput="saveAnswer(this.dataset.key, this.value)"></textarea>
+  </div>
+
+  <div class="question-block">
+    <div class="bilingual">
+      <p class="lang-es">O.7 &iquest;Cu&aacute;ntos a&ntilde;os de experiencia tiene como arquitecto en Barcelona?</p>
+      <p class="lang-en">How many years of experience do you have as an architect in Barcelona?</p>
+    </div>
+    <select data-key="o7" onchange="saveAnswer(this.dataset.key, this.value)">
+      <option value="">-- Seleccione / Select --</option>
+      <option value="<5">&lt; 5 a&ntilde;os / years</option>
+      <option value="5-10">5&ndash;10 a&ntilde;os / years</option>
+      <option value="10-20">10&ndash;20 a&ntilde;os / years</option>
+      <option value=">20">&gt; 20 a&ntilde;os / years</option>
+    </select>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="showSection(3)">&larr; <span class="lang-es">Parte 3</span> <span class="lang-en">/ Part 3</span></button>
+    <button class="btn btn-primary" onclick="showSection(5)"><span class="lang-es">Revisar y enviar</span> <span class="lang-en">/ Review &amp; submit</span> &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== SECTION 5: REVIEW ==================== -->
+<div class="section" id="section-5">
+  <div class="part-header">
+    <div class="part-number"><span class="lang-es">Revisi&oacute;n</span> <span class="lang-en">/ Review</span></div>
+    <h2>
+      <span class="lang-es">Resumen de respuestas</span><br>
+      <span class="lang-en">Summary of answers</span>
+    </h2>
+  </div>
+
+  <div id="review-content"></div>
+
+  <div class="btn-group" style="justify-content:center; margin-top:32px;">
+    <button class="btn btn-success" onclick="downloadAnswers()">
+      <span class="lang-es">Descargar JSON</span> / <span class="lang-en">Download JSON</span>
+    </button>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="showSection(4)">&larr; <span class="lang-es">Parte 4</span> <span class="lang-en">/ Part 4</span></button>
+    <div></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ===========================
+// STATE
+// ===========================
+const STORAGE_KEY = 'architect_survey_v1';
+let answers = {};
+let i18nData = {};
+let clauData = [];
+let parcelData = [];
+let currentSection = 0;
+let currentClauIndex = 0;
+let currentParcelIndex = 0;
+let leafletMaps = {};
+
+// ===========================
+// INITIALIZATION
+// ===========================
+document.addEventListener('DOMContentLoaded', () => {
+  loadProgress();
+  setupLangToggle();
+  loadExternalData();
+  restoreFormState();
+});
+
+// ===========================
+// LANGUAGE TOGGLE
+// ===========================
+function setupLangToggle() {
+  const toggle = document.getElementById('langToggle');
+  const buttons = toggle.querySelectorAll('button');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const lang = btn.dataset.lang;
+      document.body.classList.remove('hide-en', 'en-primary');
+      if (lang === 'es') document.body.classList.add('hide-en');
+      else if (lang === 'en') document.body.classList.add('en-primary');
+      saveAnswer('_lang', lang);
+    });
+  });
+  // Restore language preference
+  const savedLang = answers._lang;
+  if (savedLang) {
+    buttons.forEach(b => b.classList.remove('active'));
+    const target = toggle.querySelector(`[data-lang="${savedLang}"]`);
+    if (target) {
+      target.classList.add('active');
+      document.body.classList.remove('hide-en', 'en-primary');
+      if (savedLang === 'es') document.body.classList.add('hide-en');
+      else if (savedLang === 'en') document.body.classList.add('en-primary');
+    }
+  }
+}
+
+// ===========================
+// BILINGUAL RENDER
+// ===========================
+function bilingual(key) {
+  const t = i18nData[key];
+  if (!t) return `<p class="lang-es">${key}</p>`;
+  return `<p class="lang-es">${t.es || ''}</p><p class="lang-en">${t.en || ''}</p>`;
+}
+
+// ===========================
+// SECTION NAVIGATION
+// ===========================
+function showSection(n) {
+  // Sync previous section to Google Sheets on navigation
+  const sectionNames = ['welcome', 'part1', 'part2', 'part3', 'part4', 'review'];
+  if (currentSection > 0 && currentSection < 5 && n !== currentSection) {
+    syncToSheets(sectionNames[currentSection]);
+  }
+
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const section = document.getElementById(`section-${n}`);
+  if (section) {
+    section.classList.add('active');
+    currentSection = n;
+    updateProgress();
+    saveAnswer('_currentSection', n);
+    window.scrollTo(0, 0);
+
+    // Initialize maps if entering section 2 or 3
+    if (n === 2 && clauData.length > 0) {
+      setTimeout(() => renderClauCard(currentClauIndex), 100);
+    }
+    if (n === 3 && parcelData.length > 0) {
+      setTimeout(() => renderParcelCard(currentParcelIndex), 100);
+    }
+    if (n === 5) {
+      renderReview();
+    }
+  }
+}
+
+function startSurvey() {
+  const name = document.getElementById('respondent-name').value.trim();
+  const email = document.getElementById('respondent-email').value.trim();
+  if (!name) {
+    alert('Por favor, ingrese su nombre. / Please enter your name.');
+    return;
+  }
+  saveAnswer('respondent_name', name);
+  saveAnswer('respondent_email', email);
+  showSection(1);
+}
+
+function updateProgress() {
+  const totalSections = 6;
+  const pct = Math.round((currentSection / (totalSections - 1)) * 100);
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  fill.style.width = pct + '%';
+  const sectionNames = ['Inicio', 'Parte 1', 'Parte 2', 'Parte 3', 'Parte 4', 'Revision'];
+  label.textContent = `${sectionNames[currentSection]} - ${pct}%`;
+}
+
+// ===========================
+// ANSWERS: SAVE / LOAD / EXPORT
+// ===========================
+// ===========================
+// GOOGLE SHEETS INTEGRATION
+// ===========================
+// After deploying Apps Script, paste your URL here:
+const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxrCVKTMtNdC6v6E-_zY7OLv5NDO0tZ9ueSVa0_G9mpVuqE7mUvbSMzKZ53ThRjCuTW9A/exec';
+
+let _saveTimeout = null;
+let _sheetsSynced = false;
+
+function saveAnswer(key, value) {
+  answers[key] = value;
+  saveProgress();
+}
+
+function saveProgress() {
+  // Always save locally
+  try {
+    answers._timestamp = new Date().toISOString();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
+  } catch (e) {
+    console.warn('Could not save to localStorage:', e);
+  }
+  showSyncStatus('local');
+}
+
+function syncToSheets(section) {
+  if (!GOOGLE_SHEETS_URL) return;
+  if (!answers._respondent_id) {
+    answers._respondent_id = Math.random().toString(36).substring(2, 10);
+  }
+  const payload = {
+    respondent_id: answers._respondent_id,
+    name: answers.respondent_name || '',
+    email: answers.respondent_email || '',
+    section: section || 'auto',
+    answers: answers
+  };
+  // Use sendBeacon for reliability (works even on page close), fallback to fetch
+  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  const sent = navigator.sendBeacon ? navigator.sendBeacon(GOOGLE_SHEETS_URL, blob) : false;
+  if (!sent) {
+    fetch(GOOGLE_SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    }).catch(() => {});
+  }
+  _sheetsSynced = true;
+  showSyncStatus('synced');
+}
+
+function showSyncStatus(status) {
+  let el = document.getElementById('sync-status');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sync-status';
+    el.style.cssText = 'position:fixed;bottom:12px;right:12px;padding:6px 14px;border-radius:16px;font-size:12px;z-index:9999;transition:opacity 0.3s;';
+    document.body.appendChild(el);
+  }
+  if (status === 'synced') {
+    el.textContent = '☁ Enviado / Sent to Google Sheets';
+    el.style.background = '#e8f5e9'; el.style.color = '#2e7d32';
+  } else if (GOOGLE_SHEETS_URL) {
+    el.textContent = '💾 Guardado localmente / Saved locally';
+    el.style.background = '#fff3e0'; el.style.color = '#e65100';
+  } else {
+    el.textContent = '💾 Solo local / Local only';
+    el.style.background = '#f5f5f5'; el.style.color = '#999';
+  }
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0.4'; }, 3000);
+}
+
+function loadProgress() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      answers = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.warn('Could not load from localStorage:', e);
+    answers = {};
+  }
+}
+
+function restoreFormState() {
+  // Restore name/email
+  if (answers.respondent_name) document.getElementById('respondent-name').value = answers.respondent_name;
+  if (answers.respondent_email) document.getElementById('respondent-email').value = answers.respondent_email;
+
+  // Restore sliders
+  document.querySelectorAll('input[type="range"][data-key]').forEach(slider => {
+    const key = slider.dataset.key;
+    if (answers[key] !== undefined) {
+      slider.value = answers[key];
+      updateSlider(slider);
+    }
+  });
+
+  // Restore number inputs
+  document.querySelectorAll('input[type="number"][data-key]').forEach(input => {
+    if (answers[input.dataset.key] !== undefined) input.value = answers[input.dataset.key];
+  });
+
+  // Restore textareas
+  document.querySelectorAll('textarea[data-key]').forEach(ta => {
+    if (answers[ta.dataset.key] !== undefined) ta.value = answers[ta.dataset.key];
+  });
+
+  // Restore selects
+  document.querySelectorAll('select[data-key]').forEach(sel => {
+    if (answers[sel.dataset.key] !== undefined) sel.value = answers[sel.dataset.key];
+  });
+
+  // Restore radio buttons
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    const name = radio.name;
+    if (answers[name] !== undefined && radio.value === answers[name]) {
+      radio.checked = true;
+    }
+  });
+
+  // Restore mix sliders
+  if (answers.mix_t1 !== undefined) {
+    const t1 = document.querySelector('[data-mix="t1"]');
+    const t2 = document.querySelector('[data-mix="t2"]');
+    const t3 = document.querySelector('[data-mix="t3"]');
+    if (t1) t1.value = answers.mix_t1;
+    if (t2) t2.value = answers.mix_t2;
+    if (t3) t3.value = answers.mix_t3;
+    updateMix();
+  }
+
+  // Restore checkboxes
+  document.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb => {
+    const key = cb.dataset.key;
+    if (answers[key] && Array.isArray(answers[key]) && answers[key].includes(cb.value)) {
+      cb.checked = true;
+    }
+  });
+
+  // Restore current section
+  if (answers._currentSection !== undefined) {
+    showSection(answers._currentSection);
+  }
+}
+
+function downloadAnswers() {
+  // Final sync
+  answers._completed = true;
+  answers._completedAt = new Date().toISOString();
+  saveProgress();
+  syncToSheets('final');
+
+  // Also download as file
+  const data = {
+    ...answers,
+    _exportedAt: new Date().toISOString(),
+    _version: '1.0'
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const name = (answers.respondent_name || 'architect').replace(/\s+/g, '_').toLowerCase();
+  a.download = `survey_${name}_${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ===========================
+// SLIDER COMPONENT
+// ===========================
+function updateSlider(el, suffix) {
+  const key = el.dataset.key;
+  const val = parseFloat(el.value);
+  const unit = suffix || (el.max > 50 && !key.includes('q3') && !key.includes('q6_4') && !key.includes('q4_3') ? ' m\u00B2' : '%');
+  // Determine unit based on key
+  let displayUnit = '%';
+  if (['q1_1','q1_2','q1_3'].includes(key)) displayUnit = ' m\u00B2';
+  else if (key === 'q4_2') displayUnit = ' m';
+  else displayUnit = '%';
+
+  const display = document.getElementById('val-' + key);
+  if (display) display.textContent = val + displayUnit;
+  saveAnswer(key, val);
+}
+
+// ===========================
+// MIX SLIDERS
+// ===========================
+function updateMix() {
+  const t1 = parseInt(document.querySelector('[data-mix="t1"]').value);
+  const t2 = parseInt(document.querySelector('[data-mix="t2"]').value);
+  const t3 = parseInt(document.querySelector('[data-mix="t3"]').value);
+  document.getElementById('mix-t1').textContent = t1 + '%';
+  document.getElementById('mix-t2').textContent = t2 + '%';
+  document.getElementById('mix-t3').textContent = t3 + '%';
+  const total = t1 + t2 + t3;
+  const totalEl = document.getElementById('mix-total');
+  if (total === 100) {
+    totalEl.textContent = 'Total: 100% \u2713';
+    totalEl.className = 'mix-total valid';
+  } else {
+    totalEl.textContent = `Total: ${total}% (\u2260 100%)`;
+    totalEl.className = 'mix-total invalid';
+  }
+  saveAnswer('mix_t1', t1);
+  saveAnswer('mix_t2', t2);
+  saveAnswer('mix_t3', t3);
+}
+
+// ===========================
+// CHECKBOX GROUPS
+// ===========================
+function saveCheckboxGroup(key) {
+  const checked = [];
+  document.querySelectorAll(`input[type="checkbox"][data-key="${key}"]`).forEach(cb => {
+    if (cb.checked) checked.push(cb.value);
+  });
+  saveAnswer(key, checked);
+}
+
+// ===========================
+// CONDITIONAL QUESTIONS
+// ===========================
+function toggleConditional(id, show) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.toggle('visible', show);
+  }
+}
+
+// ===========================
+// DATA LOADING
+// ===========================
+function loadExternalData() {
+  // Data embedded directly — no fetch needed (GitHub Pages compatible)
+  clauData = EMBEDDED_CLAU_DATA;
+  document.getElementById('clau-loading').innerHTML = `
+    <div class="info-box">
+      <p class="lang-es">${clauData.length} fichas CLAU cargadas.</p>
+      <p class="lang-en">${clauData.length} CLAU cards loaded.</p>
+    </div>`;
+  if (currentSection === 2) renderClauCard(currentClauIndex);
+
+  parcelData = EMBEDDED_PARCEL_DATA;
+  document.getElementById('parcel-loading').innerHTML = `
+    <div class="info-box">
+      <p class="lang-es">${parcelData.length} parcelas cargadas.</p>
+      <p class="lang-en">${parcelData.length} parcels loaded.</p>
+    </div>`;
+  if (currentSection === 3) renderParcelCard(currentParcelIndex);
+
+  i18nData = EMBEDDED_I18N_DATA;
+}
+
+const EMBEDDED_CLAU_DATA = [{"code": "18", "name_es": "Zona subjecte a ordenació volumètrica específica", "name_en": "Specific volumetric planning zone", "parcels_count": 374, "apartments_total": 4892, "confidence": "low", "params": {"far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "depth_m": null, "facade_m": null, "building_type": "multi_family", "has_commercial_pb": true}, "sample_parcels": [{"ref": "1690929DF3819B", "lat": 41.4485185917611, "lng": 2.180693505231399}, {"ref": "1066214DF3816E", "lat": 41.426693159502236, "lng": 2.1732823835441937}, {"ref": "1077511DF3817G", "lat": 41.43673610082534, "lng": 2.1738720486001943}, {"ref": "0380810DF3808A", "lat": 41.43891094025495, "lng": 2.1648520133399245}, {"ref": "1060214DF3816A", "lat": 41.42123576982409, "lng": 2.1734143099875443}]}, {"code": "13b", "name_es": "Zona en densificació urbana semiintensiva", "name_en": "Semi-intensive urban densification", "parcels_count": 170, "apartments_total": 155, "confidence": "medium", "params": {"far": 1.5, "height_m": 12.35, "floors": 4, "ocupacio": 1.0, "depth_m": 12.0, "facade_m": 6.5, "building_type": "multi_family", "has_commercial_pb": true}, "sample_parcels": [{"ref": "0875161DF3807F", "lat": 41.43422323171247, "lng": 2.1709207266456354}, {"ref": "1361614DF3816A", "lat": 41.4221970215738, "lng": 2.178327465434135}, {"ref": "1364904DF3816C", "lat": 41.42536434360584, "lng": 2.1769833158587955}, {"ref": "3474612DF3837C", "lat": 41.43406307096558, "lng": 2.2022322677250488}, {"ref": "0657502DF3805H", "lat": 41.41846006982599, "lng": 2.169929279921544}]}, {"code": "EA", "name_es": "Edificación aislada unifamiliar Subzona las Planas", "name_en": "Detached single-family (Las Planas)", "parcels_count": 131, "apartments_total": 129, "confidence": "high", "params": {"far": 0.4, "height_m": 9.15, "floors": 3, "ocupacio": 0.35, "depth_m": null, "facade_m": 12.0, "building_type": "single_family", "has_commercial_pb": false}, "sample_parcels": [{"ref": "4570232DF2847B", "lat": 41.42767945677752, "lng": 2.0954792812876333}, {"ref": "4655301DF2845F", "lat": 41.41815120822338, "lng": 2.096670865669105}, {"ref": "4357421DF2845G", "lat": 41.41751986719149, "lng": 2.0952597249276024}, {"ref": "3463746DF2836C", "lat": 41.42612743620277, "lng": 2.0886376378520928}, {"ref": "4464309DF2846C", "lat": 41.42565535694692, "lng": 2.0954282692770723}]}, {"code": "13a", "name_es": "Zona en densificació urbana intensiva", "name_en": "Intensive urban densification", "parcels_count": 64, "apartments_total": 144, "confidence": "medium", "params": {"far": 2.2, "height_m": 15.7, "floors": 5, "ocupacio": 1.0, "depth_m": 12.0, "facade_m": 8.0, "building_type": "multi_family", "has_commercial_pb": true}, "sample_parcels": [{"ref": "2284930DF3828C", "lat": 41.44321754351527, "lng": 2.1875900042469274}, {"ref": "2257341DF3825G", "lat": 41.419414607173636, "lng": 2.187432002766207}, {"ref": "2578406DF3827H", "lat": 41.43814147908627, "lng": 2.19176938563773}, {"ref": "7847828DF2874F", "lat": 41.4086600805446, "lng": 2.1356604940847466}, {"ref": "8145806DF2884E", "lat": 41.40710335920409, "lng": 2.139523169850629}]}, {"code": "20a/10", "name_es": "Zona d'ordenació en edificació aïllada, subzona unifamiliar VII", "name_en": "Single-family subzone VII", "parcels_count": 87, "apartments_total": 85, "confidence": "high", "params": {"far": 0.75, "height_m": 9.15, "floors": 3, "ocupacio": 0.35, "depth_m": null, "facade_m": 16.0, "building_type": "single_family", "has_commercial_pb": false}, "sample_parcels": [{"ref": "9474301DF2897C", "lat": 41.43408814771172, "lng": 2.1540115429503555}, {"ref": "5355662DF2855E", "lat": 41.41551830399644, "lng": 2.106900778826984}, {"ref": "5862633DF2856B", "lat": 41.417681389274605, "lng": 2.110288533883468}, {"ref": "7757901DF2875F", "lat": 41.41839024348528, "lng": 2.1342395021754372}, {"ref": "5355647DF2855E", "lat": 41.415726577479695, "lng": 2.106288751594465}]}, {"code": "20a/11", "name_es": "Edificació aïllada, subzona unifamiliar VIII", "name_en": "Single-family subzone VIII", "parcels_count": 83, "apartments_total": 82, "confidence": "high", "params": {"far": 0.5, "height_m": 9.15, "floors": 3, "ocupacio": 0.3, "depth_m": null, "facade_m": 18.0, "building_type": "single_family", "has_commercial_pb": false}, "sample_parcels": [{"ref": "5434303DF2853C", "lat": 41.3975338880255, "lng": 2.1069436740803766}, {"ref": "5632828DF2853B", "lat": 41.39550227132749, "lng": 2.1082818016676876}, {"ref": "7549603DF2874H", "lat": 41.41099519810444, "lng": 2.1326233731171613}, {"ref": "5446716DF2854E", "lat": 41.40811676714906, "lng": 2.1069791816535157}, {"ref": "6054170DF2865C", "lat": 41.41314149620349, "lng": 2.112264565701687}]}, {"code": "13b/c", "name_es": "Zona urbana semiintensiva", "name_en": "Semi-intensive urban zone variant", "parcels_count": 41, "apartments_total": 23, "confidence": "medium", "params": {"far": 1.5, "height_m": 12.35, "floors": 4, "ocupacio": 1.0, "depth_m": 12.0, "facade_m": 6.5, "building_type": "multi_family", "has_commercial_pb": true}, "sample_parcels": [{"ref": "8861437DF2886B", "lat": 41.422598461444466, "lng": 2.14760864587632}, {"ref": "8863702DF2886D", "lat": 41.423063483617504, "lng": 2.147494860748712}, {"ref": "8962831DF2886B", "lat": 41.422683324061836, "lng": 2.1488999720658337}, {"ref": "9263932DF2896C", "lat": 41.423910476032724, "lng": 2.151824055616412}, {"ref": "8863233DF2886D", "lat": 41.42356007045582, "lng": 2.147046059212521}]}, {"code": "13E", "name_es": "Subzona de la zona de densificació urbana Eixample", "name_en": "Eixample subzone", "parcels_count": 36, "apartments_total": 137, "confidence": "medium", "params": {"far": 2.0, "height_m": 20.75, "floors": 6, "ocupacio": 0.7, "depth_m": 28.0, "facade_m": 8.0, "building_type": "multi_family", "has_commercial_pb": true}, "sample_parcels": [{"ref": "1446925DF3814E", "lat": 41.40864664640607, "lng": 2.1788968802280557}, {"ref": "9617102DF2891F", "lat": 41.382541036590055, "lng": 2.1574308323035187}, {"ref": "0739130DF3803H", "lat": 41.401672697405274, "lng": 2.1694105645681914}, {"ref": "8523508DF2882D", "lat": 41.387951856482694, "lng": 2.144843819007358}, {"ref": "1236422DF3813E", "lat": 41.40029965636615, "lng": 2.1767256571711537}]}, {"code": "12", "name_es": "Zona de casc antic de substitució de la edificació antiga", "name_en": "Old town replacement zone", "parcels_count": 35, "apartments_total": 41, "confidence": "medium", "params": {"far": 1.8, "height_m": 15.7, "floors": 5, "ocupacio": 1.0, "depth_m": 15.0, "facade_m": 6.0, "building_type": "multi_family", "has_commercial_pb": true}, "sample_parcels": [{"ref": "6312978DF2861A", "lat": 41.37759251656058, "lng": 2.1170923909571817}, {"ref": "9705207DF2890F", "lat": 41.37165724765381, "lng": 2.158378669812719}, {"ref": "6339550DF2863G", "lat": 41.40290552114638, "lng": 2.1176410963404853}, {"ref": "0205214DF3800E", "lat": 41.371202829337605, "lng": 2.1643995402193097}, {"ref": "6438514DF2863G", "lat": 41.40152430353058, "lng": 2.119909323227909}]}, {"code": "22@T", "name_es": "Subzona d'activitats 22@ transformat", "name_en": "22@ transformed (allows residential)", "parcels_count": 30, "apartments_total": 753, "confidence": "medium", "params": {"far": 2.65, "height_m": 22.4, "floors": 7, "ocupacio": 0.7, "depth_m": null, "facade_m": null, "building_type": "multi_family", "has_commercial_pb": true}, "sample_parcels": [{"ref": "31458E1DF3834E", "lat": 41.40753077799381, "lng": 2.1979589478794446}, {"ref": "2332515DF3823C", "lat": 41.39681268312336, "lng": 2.1906289046056906}, {"ref": "3851133DF3835B", "lat": 41.41287427714408, "lng": 2.206688017043048}, {"ref": "3851130DF3835B", "lat": 41.41265747646377, "lng": 2.2066632545774216}, {"ref": "31458C0DF3834E", "lat": 41.409323533135634, "lng": 2.197686958743815}]}, {"code": "20a/9", "name_es": "Edificació aïllada, subzona plurifamiliar IVa", "name_en": "Multi-family subzone IVa", "parcels_count": 43, "apartments_total": 132, "confidence": "high", "params": {"far": 1.0, "height_m": 9.15, "floors": 3, "ocupacio": 0.4, "depth_m": null, "facade_m": 14.0, "building_type": "multi_family", "has_commercial_pb": false}, "sample_parcels": [{"ref": "0265406DF3806E", "lat": 41.42587868083498, "lng": 2.1643523237728304}, {"ref": "7759315DF2875H", "lat": 41.41996002822086, "lng": 2.133672622068728}, {"ref": "8552334DF2885D", "lat": 41.41372632014332, "lng": 2.1438148479366124}, {"ref": "0565623DF3806F", "lat": 41.42516228911552, "lng": 2.168051915713839}, {"ref": "0858620DF3805H", "lat": 41.41925034580368, "lng": 2.1721365867863653}]}, {"code": "18hp", "name_es": "Zona d'ordenació volumetria específica per habitatges de protecció", "name_en": "Volumetric zone - social housing", "parcels_count": 14, "apartments_total": 284, "confidence": "low", "params": {"far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "depth_m": null, "facade_m": null, "building_type": "multi_family", "has_commercial_pb": false}, "sample_parcels": [{"ref": "2696505DF3829F", "lat": 41.45396927185948, "lng": 2.1929159182620954}, {"ref": "1789116DF3818H", "lat": 41.446593828774894, "lng": 2.1808878342384426}, {"ref": "7977307DF2777H", "lat": 41.348151467575995, "lng": 2.137676695699618}, {"ref": "8187818DF2788E", "lat": 41.355132956919945, "lng": 2.1392051231742033}, {"ref": "8085326DF2788E", "lat": 41.35397630210541, "lng": 2.1383632313904304}]}];
+
+const EMBEDDED_PARCEL_DATA = [{"cadastral_ref": "31458E1DF3834E", "lat": 41.40753077799381, "lng": 2.1979589478794446, "area_m2": 7719.0, "district_name": "Sant Martí", "clau": "22@T", "clau_name": "Subzona d'activitats 22@ transformat", "street_width_m": null, "far": 2.65, "height_m": 22.4, "floors": 7, "ocupacio": 0.7, "gfa_total_m2": 20455.3, "gfa_residential_m2": 15052.0, "net_residential_m2": 12041.6, "max_apartments": 174, "apartment_t1": 35, "apartment_t2": 78, "apartment_t3": 61, "hpo_required": 53, "confidence_level": "medium", "floors_source": "clau_default", "edificabilitat_source": "clau_default", "selection_reason": "top_by_apartments"}, {"cadastral_ref": "3953726DF3835D", "lat": 41.415033936609404, "lng": 2.208326395811817, "area_m2": 6246.0, "district_name": "Sant Martí", "clau": "22@T", "clau_name": "Subzona d'activitats 22@ transformat", "street_width_m": null, "far": 2.65, "height_m": 22.4, "floors": 7, "ocupacio": 0.7, "gfa_total_m2": 16551.9, "gfa_residential_m2": 12179.7, "net_residential_m2": 9743.8, "max_apartments": 138, "apartment_t1": 28, "apartment_t2": 62, "apartment_t3": 48, "hpo_required": 42, "confidence_level": "medium", "floors_source": "clau_default", "edificabilitat_source": "clau_default", "selection_reason": "top_by_apartments"}, {"cadastral_ref": "3846530DF3834F", "lat": 41.409441676771294, "lng": 2.2070759135090774, "area_m2": 4481.0, "district_name": "Sant Martí", "clau": "7b/7AD", "clau_name": "Sistema d'equipaments comunitaris i allotjament dotacional", "street_width_m": null, "far": 2.0, "height_m": 18.8, "floors": 6, "ocupacio": 0.7, "gfa_total_m2": 8962.0, "gfa_residential_m2": 8962.0, "net_residential_m2": 7169.6, "max_apartments": 102, "apartment_t1": 20, "apartment_t2": 46, "apartment_t3": 36, "hpo_required": 31, "confidence_level": "low", "floors_source": "clau_default", "edificabilitat_source": "clau_default", "selection_reason": "top_by_apartments"}, {"cadastral_ref": "1690929DF3819B", "lat": 41.4485185917611, "lng": 2.180693505231399, "area_m2": 9536.0, "district_name": "Nou Barris", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "gfa_total_m2": 14304.0, "gfa_residential_m2": 8582.4, "net_residential_m2": 6865.9, "max_apartments": 98, "apartment_t1": 20, "apartment_t2": 44, "apartment_t3": 34, "hpo_required": 30, "confidence_level": "low", "floors_source": "", "edificabilitat_source": "clau_default", "selection_reason": "top_by_apartments"}, {"cadastral_ref": "2957620DF3825H", "lat": 41.418897881075644, "lng": 2.1969683028059697, "area_m2": 9031.0, "district_name": "Sant Martí", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "gfa_total_m2": 13546.5, "gfa_residential_m2": 8127.9, "net_residential_m2": 6502.3, "max_apartments": 94, "apartment_t1": 19, "apartment_t2": 42, "apartment_t3": 33, "hpo_required": 29, "confidence_level": "low", "floors_source": "", "edificabilitat_source": "clau_default", "selection_reason": "top_by_apartments"}, {"cadastral_ref": "2585942DF3828F", "lat": 41.44355254065338, "lng": 2.1917345632300362, "area_m2": 571.0, "district_name": "Sant Andreu", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "gfa_total_m2": 856.5, "gfa_residential_m2": 513.9, "net_residential_m2": 411.1, "max_apartments": 4, "apartment_t1": 1, "apartment_t2": 2, "apartment_t3": 1, "hpo_required": 2, "confidence_level": "low", "floors_source": "", "edificabilitat_source": "clau_default", "selection_reason": "clau_18_sample"}, {"cadastral_ref": "6825208DF2862F", "lat": 41.38889928838741, "lng": 2.1234563850218686, "area_m2": 390.0, "district_name": "Les Corts", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": 43.35, "floors": 14, "ocupacio": 0.6, "gfa_total_m2": 585.0, "gfa_residential_m2": 351.0, "net_residential_m2": 280.8, "max_apartments": 4, "apartment_t1": 2, "apartment_t2": 2, "apartment_t3": 0, "hpo_required": 2, "confidence_level": "low", "floors_source": "parsed", "edificabilitat_source": "clau_default", "selection_reason": "clau_18_sample"}, {"cadastral_ref": "3959509DF3835H", "lat": 41.4207205941385, "lng": 2.2083480412320307, "area_m2": 6313.0, "district_name": "Sant Martí", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "gfa_total_m2": 9469.5, "gfa_residential_m2": 5681.7, "net_residential_m2": 4545.4, "max_apartments": 64, "apartment_t1": 13, "apartment_t2": 29, "apartment_t3": 22, "hpo_required": 20, "confidence_level": "low", "floors_source": "", "edificabilitat_source": "clau_default", "selection_reason": "clau_18_sample"}, {"cadastral_ref": "4058605DF3845G", "lat": 41.41997041823989, "lng": 2.21063725356298, "area_m2": 1530.0, "district_name": "Sant Martí", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": 34.2, "floors": 11, "ocupacio": 0.6, "gfa_total_m2": 2295.0, "gfa_residential_m2": 1377.0, "net_residential_m2": 1101.6, "max_apartments": 10, "apartment_t1": 2, "apartment_t2": 4, "apartment_t3": 4, "hpo_required": 3, "confidence_level": "low", "floors_source": "parsed", "edificabilitat_source": "clau_default", "selection_reason": "clau_18_sample"}, {"cadastral_ref": "1066214DF3816E", "lat": 41.426693159502236, "lng": 2.1732823835441937, "area_m2": 2209.0, "district_name": "Unknown", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "gfa_total_m2": 3313.5, "gfa_residential_m2": 1988.1, "net_residential_m2": 1590.5, "max_apartments": 22, "apartment_t1": 4, "apartment_t2": 10, "apartment_t3": 8, "hpo_required": 7, "confidence_level": "low", "floors_source": "", "edificabilitat_source": "clau_default", "selection_reason": "clau_18_sample"}, {"cadastral_ref": "6733218DF2863D", "lat": 41.39656573803546, "lng": 2.122097236361583, "area_m2": 285.0, "district_name": "Sarrià-Sant Gervasi", "clau": "13b", "clau_name": "Zona en densificació urbana semiintensiva", "street_width_m": 5.8, "far": 1.5, "height_m": 8.25, "floors": 2, "ocupacio": 1.0, "gfa_total_m2": 156.0, "gfa_residential_m2": 78.0, "net_residential_m2": 62.4, "max_apartments": 1, "apartment_t1": 1, "apartment_t2": 0, "apartment_t3": 0, "hpo_required": 1, "confidence_level": "medium", "floors_source": "street_width", "edificabilitat_source": "clau_default", "selection_reason": "clau_13b_width_narrow_lt8_5.8m"}, {"cadastral_ref": "8612727DF2881B", "lat": 41.37741387531981, "lng": 2.145291722833544, "area_m2": 176.0, "district_name": "Sants-Montjuïc", "clau": "13b", "clau_name": "Zona en densificació urbana semiintensiva", "street_width_m": 9.9, "far": 1.5, "height_m": 12.0, "floors": 3, "ocupacio": 1.0, "gfa_total_m2": 234.0, "gfa_residential_m2": 156.0, "net_residential_m2": 124.8, "max_apartments": 1, "apartment_t1": 1, "apartment_t2": 0, "apartment_t3": 0, "hpo_required": 1, "confidence_level": "medium", "floors_source": "street_width", "edificabilitat_source": "clau_default", "selection_reason": "clau_13b_width_medium_8_11_9.9m"}, {"cadastral_ref": "1361328DF3816A", "lat": 41.42249447116154, "lng": 2.1767179867786495, "area_m2": 260.0, "district_name": "Horta-Guinardó", "clau": "13b", "clau_name": "Zona en densificació urbana semiintensiva", "street_width_m": 11.8, "far": 1.5, "height_m": 15.4, "floors": 4, "ocupacio": 1.0, "gfa_total_m2": 312.0, "gfa_residential_m2": 234.0, "net_residential_m2": 187.2, "max_apartments": 2, "apartment_t1": 1, "apartment_t2": 1, "apartment_t3": 0, "hpo_required": 1, "confidence_level": "medium", "floors_source": "street_width", "edificabilitat_source": "clau_default", "selection_reason": "clau_13b_width_wide_11_15_11.8m"}, {"cadastral_ref": "1290315DF3819A", "lat": 41.448547301206325, "lng": 2.1756092146661814, "area_m2": 159.0, "district_name": "Nou Barris", "clau": "13b-RII", "clau_name": "Zona en densificació urbana semi-intensiva", "street_width_m": 19.6, "far": 1.5, "height_m": 18.8, "floors": 5, "ocupacio": 1.0, "gfa_total_m2": 238.5, "gfa_residential_m2": 160.5, "net_residential_m2": 128.4, "max_apartments": 1, "apartment_t1": 1, "apartment_t2": 0, "apartment_t3": 0, "hpo_required": 1, "confidence_level": "medium", "floors_source": "street_width", "edificabilitat_source": "clau_default", "selection_reason": "clau_13b_width_very_wide_gte15_19.6m"}, {"cadastral_ref": "1805619DF3910F", "lat": 41.461520045570076, "lng": 2.1828939296147354, "area_m2": 405.0, "district_name": "Unknown", "clau": "13b-V", "clau_name": "Cases en filera", "street_width_m": null, "far": 1.5, "height_m": 12.35, "floors": 4, "ocupacio": 1.0, "gfa_total_m2": 312.0, "gfa_residential_m2": 234.0, "net_residential_m2": 187.2, "max_apartments": 2, "apartment_t1": 1, "apartment_t2": 1, "apartment_t3": 0, "hpo_required": 1, "confidence_level": "medium", "floors_source": "clau_default", "edificabilitat_source": "clau_default", "selection_reason": "clau_13b_width_unknown_unknown"}, {"cadastral_ref": "6031324DF2863A", "lat": 41.39493112733073, "lng": 2.1141264133720252, "area_m2": 249.0, "district_name": "Unknown", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "gfa_total_m2": 373.5, "gfa_residential_m2": 224.1, "net_residential_m2": 179.3, "max_apartments": 2, "apartment_t1": 0, "apartment_t2": 1, "apartment_t3": 1, "hpo_required": 1, "confidence_level": "low", "floors_source": "", "edificabilitat_source": "clau_default", "selection_reason": "low_confidence_with_apartments"}, {"cadastral_ref": "0615205DF3801F", "lat": 41.38026927864161, "lng": 2.1694401908322183, "area_m2": 122.0, "district_name": "Ciutat Vella", "clau": "12b", "clau_name": "Casc antic de conservació del centre històric", "street_width_m": 29.9, "far": 1.8, "height_m": 18.8, "floors": 5, "ocupacio": 1.0, "gfa_total_m2": 219.6, "gfa_residential_m2": 129.6, "net_residential_m2": 103.7, "max_apartments": 1, "apartment_t1": 1, "apartment_t2": 0, "apartment_t3": 0, "hpo_required": 1, "confidence_level": "low", "floors_source": "street_width", "edificabilitat_source": "clau_default", "selection_reason": "low_confidence_with_apartments"}, {"cadastral_ref": "1402915DF3910A", "lat": 41.45811411469122, "lng": 2.177628579486765, "area_m2": 695.0, "district_name": "Nou Barris", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": 13.15, "floors": 4, "ocupacio": 0.6, "gfa_total_m2": 1042.5, "gfa_residential_m2": 625.5, "net_residential_m2": 500.4, "max_apartments": 6, "apartment_t1": 1, "apartment_t2": 3, "apartment_t3": 2, "hpo_required": 2, "confidence_level": "low", "floors_source": "parsed", "edificabilitat_source": "clau_default", "selection_reason": "low_confidence_with_apartments"}, {"cadastral_ref": "4451862DF2845A", "lat": 41.41408505995438, "lng": 2.096256964977759, "area_m2": 102.0, "district_name": "Sarrià-Sant Gervasi", "clau": "EA", "clau_name": "Edificación aislada unifamiliar Subzona las Planas", "street_width_m": null, "far": 0.4, "height_m": 9.15, "floors": 3, "ocupacio": 0.35, "gfa_total_m2": 40.8, "gfa_residential_m2": 40.8, "net_residential_m2": 40.8, "max_apartments": 1, "apartment_t1": 1, "apartment_t2": 0, "apartment_t3": 0, "hpo_required": 0, "confidence_level": "high", "floors_source": "parsed", "edificabilitat_source": "original", "selection_reason": "single_family"}, {"cadastral_ref": "4572306DF2847D", "lat": 41.431868396989444, "lng": 2.095587257171987, "area_m2": 524.0, "district_name": "Sarrià-Sant Gervasi", "clau": "EA", "clau_name": "Edificación aislada unifamiliar Subzona las Planas", "street_width_m": null, "far": 0.4, "height_m": 9.15, "floors": 3, "ocupacio": 0.35, "gfa_total_m2": 209.6, "gfa_residential_m2": 209.6, "net_residential_m2": 209.6, "max_apartments": 1, "apartment_t1": 0, "apartment_t2": 0, "apartment_t3": 1, "hpo_required": 0, "confidence_level": "high", "floors_source": "parsed", "edificabilitat_source": "original", "selection_reason": "single_family"}, {"cadastral_ref": "0079426DF3807G", "lat": 41.43824592986809, "lng": 2.1623134714082046, "area_m2": 475.0, "district_name": "Horta-Guinardó", "clau": "20a/10", "clau_name": "Edificació aïllada, subzona unifamiliar VII", "street_width_m": null, "far": 0.75, "height_m": 9.15, "floors": 3, "ocupacio": 0.35, "gfa_total_m2": 356.2, "gfa_residential_m2": 356.2, "net_residential_m2": 356.2, "max_apartments": 1, "apartment_t1": 0, "apartment_t2": 0, "apartment_t3": 1, "hpo_required": 0, "confidence_level": "high", "floors_source": "parsed", "edificabilitat_source": "original", "selection_reason": "single_family"}, {"cadastral_ref": "3979315DF3837H", "lat": 41.4387049136096, "lng": 2.2080648860850074, "area_m2": 53.0, "district_name": "Sant Andreu", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "gfa_total_m2": 79.5, "gfa_residential_m2": 47.7, "net_residential_m2": 38.2, "max_apartments": 0, "apartment_t1": 0, "apartment_t2": 0, "apartment_t3": 0, "hpo_required": 0, "confidence_level": "low", "floors_source": "", "edificabilitat_source": "clau_default", "selection_reason": "edge_case_net_area_too_small"}, {"cadastral_ref": "8842244DF2884D", "lat": 41.40460495574468, "lng": 2.148275382739869, "area_m2": 162.0, "district_name": "Sarrià-Sant Gervasi", "clau": "12", "clau_name": "Zona de casc antic de substitució de la edificació antiga", "street_width_m": 7.9, "far": 1.8, "height_m": 8.25, "floors": 2, "ocupacio": 1.0, "gfa_total_m2": 195.0, "gfa_residential_m2": 97.5, "net_residential_m2": 78.0, "max_apartments": 1, "apartment_t1": 1, "apartment_t2": 0, "apartment_t3": 0, "hpo_required": 1, "confidence_level": "medium", "floors_source": "street_width", "edificabilitat_source": "clau_default", "selection_reason": "edge_case_small_area"}, {"cadastral_ref": "1711421DF3911B", "lat": 41.46787720418494, "lng": 2.182426231389539, "area_m2": 155.0, "district_name": "Nou Barris", "clau": "20a9 IV.V", "clau_name": "Cases separades", "street_width_m": null, "far": 1.0, "height_m": 7.5, "floors": 2, "ocupacio": 0.4, "gfa_total_m2": 124.0, "gfa_residential_m2": 124.0, "net_residential_m2": 99.2, "max_apartments": 1, "apartment_t1": 1, "apartment_t2": 0, "apartment_t3": 0, "hpo_required": 1, "confidence_level": "high", "floors_source": "parsed", "edificabilitat_source": "original", "selection_reason": "edge_case_small_area"}, {"cadastral_ref": "1400384DF3910A", "lat": 41.458128518118, "lng": 2.1790397170808786, "area_m2": 370.0, "district_name": "Nou Barris", "clau": "16/18", "clau_name": "Zona en sòl urbà de reordenació volumètrica", "street_width_m": null, "far": 1.0, "height_m": 9.15, "floors": 3, "ocupacio": 0.4, "gfa_total_m2": 370.0, "gfa_residential_m2": 370.0, "net_residential_m2": 370.0, "max_apartments": 1, "apartment_t1": 0, "apartment_t2": 0, "apartment_t3": 1, "hpo_required": 0, "confidence_level": "high", "floors_source": "clau_default", "edificabilitat_source": "original", "selection_reason": "random_sample"}, {"cadastral_ref": "4570240DF2847B", "lat": 41.42876955138142, "lng": 2.095584429586501, "area_m2": 398.0, "district_name": "Sarrià-Sant Gervasi", "clau": "EA", "clau_name": "Edificación aislada unifamiliar Subzona las Planas", "street_width_m": null, "far": 0.4, "height_m": 9.15, "floors": 3, "ocupacio": 0.35, "gfa_total_m2": 159.2, "gfa_residential_m2": 159.2, "net_residential_m2": 159.2, "max_apartments": 1, "apartment_t1": 0, "apartment_t2": 0, "apartment_t3": 1, "hpo_required": 0, "confidence_level": "high", "floors_source": "parsed", "edificabilitat_source": "original", "selection_reason": "random_sample"}, {"cadastral_ref": "4062513DF3846C", "lat": 41.42309905627187, "lng": 2.2101492818188246, "area_m2": 5605.0, "district_name": "Sant Martí", "clau": "18", "clau_name": "Zona subjecte a ordenació volumètrica específica", "street_width_m": null, "far": 1.5, "height_m": null, "floors": null, "ocupacio": 0.6, "gfa_total_m2": 8407.5, "gfa_residential_m2": 5044.5, "net_residential_m2": 4035.6, "max_apartments": 58, "apartment_t1": 12, "apartment_t2": 26, "apartment_t3": 20, "hpo_required": 18, "confidence_level": "low", "floors_source": "", "edificabilitat_source": "clau_default", "selection_reason": "random_sample"}, {"cadastral_ref": "5452533DF2855C", "lat": 41.413803391401636, "lng": 2.105766383122339, "area_m2": 711.0, "district_name": "Sarrià-Sant Gervasi", "clau": "20a/10", "clau_name": "Edificació aïllada, subzona unifamiliar VII", "street_width_m": null, "far": 0.75, "height_m": 9.15, "floors": 3, "ocupacio": 0.35, "gfa_total_m2": 533.2, "gfa_residential_m2": 533.2, "net_residential_m2": 533.2, "max_apartments": 1, "apartment_t1": 0, "apartment_t2": 0, "apartment_t3": 1, "hpo_required": 0, "confidence_level": "high", "floors_source": "parsed", "edificabilitat_source": "original", "selection_reason": "random_sample"}];
+
+const EMBEDDED_I18N_DATA = {"meta": {"title": {"es": "Encuesta de validacion arquitectonica", "en": "Architect Validation Survey"}, "subtitle": {"es": "Calibracion de parametros del algoritmo de capacidad residencial", "en": "Calibration of residential capacity algorithm parameters"}, "intro": {"es": "Esta encuesta recoge su criterio experto para calibrar los parametros de nuestro algoritmo de calculo de capacidad residencial en Barcelona. Sus respuestas permitiran mejorar la precision de las estimaciones. Tiempo estimado: 1.5-2 horas (puede interrumpir y continuar).", "en": "This survey collects your expert judgment to calibrate the parameters of our residential capacity calculation algorithm in Barcelona. Your answers will improve the accuracy of the estimates. Estimated time: 1.5-2 hours (you can pause and resume)."}}, "part1": {"title": {"es": "Parte 1: Parametros generales", "en": "Part 1: General parameters"}, "sections": {"q1": {"title": {"es": "Tamanos de viviendas", "en": "Apartment sizes"}, "hint": {"es": "El algoritmo utiliza superficies medias: T1=50 m2, T2=65 m2, T3=85 m2.", "en": "The algorithm uses average areas: T1=50 m2, T2=65 m2, T3=85 m2."}, "questions": {"q1_1": {"text": {"es": "Cual es el tamano medio de un piso T1 (1 dormitorio) que considera realista para nuevos proyectos en Barcelona?", "en": "What average T1 apartment size (1 bedroom) do you consider realistic for new projects in Barcelona?"}, "type": "slider", "min": 35, "max": 60, "step": 5, "default": 50, "unit": "m2", "algorithm_value": 50}, "q1_2": {"text": {"es": "Tamano medio de un piso T2 (2 dormitorios)?", "en": "Average T2 size (2 bedrooms)?"}, "type": "slider", "min": 50, "max": 90, "step": 5, "default": 65, "unit": "m2", "algorithm_value": 65}, "q1_3": {"text": {"es": "Tamano medio de un piso T3 (3 dormitorios)?", "en": "Average T3 size (3 bedrooms)?"}, "type": "slider", "min": 70, "max": 120, "step": 5, "default": 85, "unit": "m2", "algorithm_value": 85}, "q1_4": {"text": {"es": "Cual es la superficie minima de vivienda que aplica en sus proyectos?", "en": "What is the minimum apartment area you apply in your projects?"}, "type": "number", "min": 25, "max": 60, "step": 1, "default": 36, "unit": "m2", "algorithm_value": 36}}}, "q2": {"title": {"es": "Mix de viviendas", "en": "Apartment mix"}, "hint": {"es": "El algoritmo: 20% T1, 45% T2, 35% T3.", "en": "The algorithm: 20% T1, 45% T2, 35% T3."}, "questions": {"q2_1": {"text": {"es": "Que distribucion de tipos de vivienda es tipica en sus proyectos?", "en": "What apartment type distribution is typical in your projects?"}, "type": "triple_slider", "labels": {"t1": "T1", "t2": "T2", "t3": "T3"}, "min": 0, "max": 100, "step": 5, "default": {"t1": 20, "t2": 45, "t3": 35}, "unit": "%", "constraint": "sum_100", "algorithm_value": {"t1": 20, "t2": 45, "t3": 35}}, "q2_2": {"text": {"es": "Cambia el mix segun el distrito?", "en": "Does the mix change by district?"}, "type": "radio", "options": [{"value": "yes", "es": "Si", "en": "Yes"}, {"value": "no", "es": "No", "en": "No"}, {"value": "depends", "es": "Depende del tamano del proyecto", "en": "Depends on the project size"}]}, "q2_3": {"text": {"es": "Si si, para que distritos es diferente?", "en": "If yes, for which districts does it differ?"}, "type": "textarea", "condition": {"field": "q2_2", "value": ["yes", "depends"]}}}}, "q3": {"title": {"es": "Zonas comunes", "en": "Common areas"}, "hint": {"es": "El algoritmo: 20% para edificios plurifamiliares.", "en": "The algorithm: 20% for multi-family buildings."}, "questions": {"q3_1": {"text": {"es": "Que porcentaje de la SBA suelen ocupar las zonas comunes (escaleras, ascensores, pasillos, vestibulo)?", "en": "What percentage of GFA do common areas typically occupy (stairs, elevators, corridors, lobby)?"}, "type": "slider", "min": 10, "max": 30, "step": 1, "default": 20, "unit": "%", "algorithm_value": 20}, "q3_2": {"text": {"es": "Es diferente este porcentaje segun la altura del edificio?", "en": "Does this percentage differ by building height?"}, "type": "radio_conditional", "options": [{"value": "no", "es": "No", "en": "No"}, {"value": "yes", "es": "Si", "en": "Yes"}], "conditional_fields": {"condition_value": "yes", "fields": {"low_rise": {"text": {"es": "Hasta 4 plantas", "en": "Up to 4 floors"}, "type": "slider", "min": 10, "max": 30, "step": 1, "default": 18, "unit": "%"}, "high_rise": {"text": {"es": "5 plantas o mas", "en": "5 floors or more"}, "type": "slider", "min": 10, "max": 30, "step": 1, "default": 22, "unit": "%"}}}}, "q3_3": {"text": {"es": "Incluye el aparcamiento subterraneo en el calculo de SBA?", "en": "Do you include underground parking in the GFA calculation?"}, "type": "radio", "options": [{"value": "yes", "es": "Si", "en": "Yes"}, {"value": "no", "es": "No", "en": "No"}, {"value": "depends", "es": "Depende", "en": "Depends"}]}}}, "q4": {"title": {"es": "Planta baja comercial", "en": "Commercial ground floor"}, "hint": {"es": "El algoritmo asume planta baja comercial para CLAU 13a, 13b, 13E.", "en": "The algorithm assumes commercial ground floor for CLAU 13a, 13b, 13E."}, "questions": {"q4_1": {"text": {"es": "En que zonas suele proyectar planta baja comercial?", "en": "In which zones do you typically design a commercial ground floor?"}, "type": "checkbox", "options": [{"value": "13a", "es": "CLAU 13a", "en": "CLAU 13a"}, {"value": "13b", "es": "CLAU 13b", "en": "CLAU 13b"}, {"value": "13E", "es": "CLAU 13E", "en": "CLAU 13E"}, {"value": "eixample", "es": "Eixample", "en": "Eixample"}, {"value": "facade_15m", "es": "Todos con fachada >15 m", "en": "All with facade >15 m"}, {"value": "always", "es": "Siempre", "en": "Always"}, {"value": "never", "es": "Nunca", "en": "Never"}]}, "q4_2": {"text": {"es": "Que altura de planta baja aplica con uso comercial?", "en": "What ground floor height do you apply for commercial use?"}, "type": "slider", "min": 3.5, "max": 5.0, "step": 0.1, "default": 4.0, "unit": "m", "algorithm_value": 4.0}, "q4_3": {"text": {"es": "Que proporcion de la planta baja suele ser comercial?", "en": "What proportion of the ground floor is typically commercial?"}, "type": "slider", "min": 50, "max": 100, "step": 5, "default": 100, "unit": "%", "algorithm_value": 100}}}, "q5": {"title": {"es": "Regla de densidad Art. 323", "en": "Density rule Art. 323"}, "hint": {"es": "El algoritmo: max. viviendas = SBA / 80 m2.", "en": "The algorithm: max apartments = GFA / 80 m2."}, "questions": {"q5_1": {"text": {"es": "Segun su experiencia, la regla de 80 m2 (Art. 323) suele ser el factor limitante?", "en": "In your experience, is the 80 m2 rule (Art. 323) usually the limiting factor?"}, "type": "radio", "options": [{"value": "always", "es": "Si, siempre", "en": "Yes, always"}, {"value": "often", "es": "A menudo", "en": "Often"}, {"value": "rarely", "es": "Rara vez", "en": "Rarely"}, {"value": "depends_clau", "es": "Depende de la CLAU", "en": "Depends on the CLAU"}], "algorithm_value": "always"}, "q5_2": {"text": {"es": "Conoce casos en que el modulo de densidad difiere de 80 m2?", "en": "Do you know of cases where the density module differs from 80 m2?"}, "type": "textarea"}}}, "q6": {"title": {"es": "HPO (vivienda protegida)", "en": "Social housing (HPO)"}, "hint": {"es": "El algoritmo: 30% de viviendas = HPO.", "en": "The algorithm: 30% of apartments = HPO."}, "questions": {"q6_1": {"text": {"es": "Se aplica siempre el 30% de HPO en nuevos proyectos?", "en": "Is the 30% HPO always applied in new projects?"}, "type": "radio", "options": [{"value": "yes", "es": "Si", "en": "Yes"}, {"value": "exceptions", "es": "Hay excepciones", "en": "There are exceptions"}], "algorithm_value": 30}, "q6_2": {"text": {"es": "Si hay excepciones, cuales?", "en": "If there are exceptions, which ones?"}, "type": "textarea", "condition": {"field": "q6_1", "value": ["exceptions"]}}, "q6_3": {"text": {"es": "Afecta el HPO a la tipologia (las viviendas HPO son de diferente tamano)?", "en": "Does HPO affect typology (are HPO apartments differently sized)?"}, "type": "radio", "options": [{"value": "no", "es": "No", "en": "No"}, {"value": "smaller", "es": "Si, HPO suelen ser mas pequenas", "en": "Yes, HPO are usually smaller"}, {"value": "regulated", "es": "Si, HPO estan estrictamente reguladas", "en": "Yes, HPO are strictly regulated"}]}, "q6_4": {"text": {"es": "Si son mas pequenas, en que porcentaje?", "en": "If smaller, by what percentage?"}, "type": "slider", "min": 0, "max": 30, "step": 5, "default": 10, "unit": "%", "condition": {"field": "q6_3", "value": ["smaller"]}}}}}}, "part2": {"title": {"es": "Parte 2: Parametros por CLAU", "en": "Part 2: Parameters by CLAU"}, "card_header": {"parcels_label": {"es": "Parcelas", "en": "Parcels"}, "calculated_apartments_label": {"es": "Viviendas calculadas", "en": "Calculated apartments"}, "parameter": {"es": "Parametro", "en": "Parameter"}, "value": {"es": "Valor", "en": "Value"}, "your_assessment": {"es": "Su valoracion", "en": "Your assessment"}, "buildability": {"es": "Edificabilidad (FAR)", "en": "Buildability (FAR)"}, "max_height": {"es": "Altura max. (m)", "en": "Max height (m)"}, "plot_coverage": {"es": "Ocupacion", "en": "Plot coverage"}, "building_depth": {"es": "Profundidad (m)", "en": "Building depth (m)"}, "building_type": {"es": "Tipo edificacion", "en": "Building type"}}, "questions": {"c1": {"text": {"es": "Es correcto el FAR={value}?", "en": "Is FAR={value} correct?"}, "type": "radio_number", "options": [{"value": "yes", "es": "Si", "en": "Yes"}, {"value": "no", "es": "No, el valor correcto es:", "en": "No, the correct value is:"}]}, "c2": {"text": {"es": "Es correcta la altura maxima de {value} m?", "en": "Is the max height of {value} m correct?"}, "type": "radio_number", "options": [{"value": "yes", "es": "Si", "en": "Yes"}, {"value": "no", "es": "No, el valor correcto es:", "en": "No, the correct value is:"}]}, "c3": {"text": {"es": "Cual es el tipo de edificacion habitual?", "en": "What is the typical building type?"}, "type": "dropdown", "options": [{"value": "multi_family", "es": "Plurifamiliar", "en": "Multi-family"}, {"value": "single_family", "es": "Unifamiliar", "en": "Single-family"}, {"value": "row_house", "es": "Adosado", "en": "Row house"}, {"value": "mixed", "es": "Mixto", "en": "Mixed"}]}, "c4": {"text": {"es": "Es obligatoria la planta baja comercial?", "en": "Is a commercial ground floor mandatory?"}, "type": "radio", "options": [{"value": "yes", "es": "Si", "en": "Yes"}, {"value": "no", "es": "No", "en": "No"}, {"value": "depends", "es": "Segun situacion", "en": "Depends on the situation"}]}, "c5": {"text": {"es": "Que restricciones adicionales existen en esta zona?", "en": "What additional restrictions exist in this zone?"}, "type": "checkbox", "options": [{"value": "catalog", "es": "Catalogo patrimonial", "en": "Heritage catalog"}, {"value": "easements", "es": "Servidumbres", "en": "Easements"}, {"value": "setback", "es": "Retranqueo minimo", "en": "Minimum setback"}, {"value": "courtyard", "es": "Patio interior obligatorio", "en": "Mandatory interior courtyard"}, {"value": "other", "es": "Otro", "en": "Other"}]}, "c6": {"text": {"es": "Comentario libre", "en": "Free comment"}, "type": "textarea"}}, "clau_priority": [{"clau": "18", "description": {"es": "FAR=1.5 estimado, volumetria especifica", "en": "FAR=1.5 estimated, specific volumetry"}, "confidence": "low"}, {"clau": "13b", "description": {"es": "Zona residencial principal", "en": "Main residential zone"}, "confidence": "medium"}, {"clau": "13a", "description": {"es": "FAR=2.2, depende del ancho de vial", "en": "FAR=2.2, depends on street width"}, "confidence": "medium"}, {"clau": "12", "description": {"es": "Casco antiguo, parametros heredados", "en": "Old town, inherited parameters"}, "confidence": "low-medium"}, {"clau": "13E", "description": {"es": "Eixample, FAR=2.0", "en": "Eixample, FAR=2.0"}, "confidence": "medium"}, {"clau": "20a", "description": {"es": "Muchas variantes, verificar", "en": "Many variants, verify"}, "confidence": "high"}, {"clau": "15", "description": {"es": "Conservacion, FAR=0.88", "en": "Conservation, FAR=0.88"}, "confidence": "low-medium"}, {"clau": "16", "description": {"es": "Unifamiliar", "en": "Single-family"}, "confidence": "high"}, {"clau": "EA", "description": {"es": "Aislada, FAR=0.4", "en": "Detached, FAR=0.4"}, "confidence": "high"}, {"clau": "22@T", "description": {"es": "Transformacion, FAR=2.65", "en": "Transformation, FAR=2.65"}, "confidence": "medium"}]}, "part3": {"title": {"es": "Parte 3: Parcelas concretas", "en": "Part 3: Specific parcels"}, "card_labels": {"parcel": {"es": "Parcela", "en": "Parcel"}, "clau": {"es": "CLAU", "en": "CLAU"}, "area": {"es": "Superficie", "en": "Area"}, "street_width": {"es": "Ancho de vial", "en": "Street width"}, "algorithm_calculation": {"es": "Calculo del algoritmo", "en": "Algorithm calculation"}, "far": {"es": "FAR", "en": "FAR"}, "gfa": {"es": "SBA", "en": "GFA"}, "apartments": {"es": "viviendas", "en": "apartments"}, "height": {"es": "Altura", "en": "Height"}, "floors": {"es": "Plantas", "en": "Floors"}, "ground_floor": {"es": "PB", "en": "GF"}, "hpo": {"es": "HPO", "en": "HPO"}}, "questions": {"p1": {"text": {"es": "Es realista este calculo?", "en": "Is this calculation realistic?"}, "type": "radio", "options": [{"value": "yes", "es": "Si", "en": "Yes"}, {"value": "overestimated", "es": "Sobreestimado", "en": "Overestimated"}, {"value": "underestimated", "es": "Subestimado", "en": "Underestimated"}]}, "p2": {"text": {"es": "Cuantas viviendas proyectaria en esta parcela?", "en": "How many apartments would you plan on this parcel?"}, "type": "number", "min": 0, "max": 500, "step": 1, "unit": {"es": "viviendas", "en": "apartments"}}, "p3": {"text": {"es": "Que factores no contempla el algoritmo?", "en": "What factors does the algorithm not cover?"}, "type": "checkbox", "options": [{"value": "not_vacant", "es": "La parcela no esta realmente vacia", "en": "The parcel is not actually vacant"}, {"value": "underground", "es": "Hay instalaciones subterraneas / restricciones", "en": "There are underground utilities / restrictions"}, {"value": "listed_building", "es": "Edificio catalogado proximo", "en": "Listed building nearby"}, {"value": "parcel_shape", "es": "La forma de la parcela impide la edificacion", "en": "The parcel shape prevents construction"}, {"value": "other", "es": "Otro", "en": "Other"}]}, "p4": {"text": {"es": "Comentario adicional sobre esta parcela", "en": "Additional comment about this parcel"}, "type": "textarea"}}, "selection_criteria": [{"criterion": {"es": "Top 5 por max viviendas", "en": "Top 5 by max apartments"}, "count": 5}, {"criterion": {"es": "5 aleatorias CLAU 18", "en": "5 random CLAU 18"}, "count": 5}, {"criterion": {"es": "5 CLAU 13b con diferente ancho de vial", "en": "5 CLAU 13b with different street width"}, "count": 5}, {"criterion": {"es": "3 con confidence=low y viviendas > 0", "en": "3 with confidence=low and apartments > 0"}, "count": 3}, {"criterion": {"es": "3 unifamiliares", "en": "3 single-family"}, "count": 3}, {"criterion": {"es": "3 edge cases (notas de calculo)", "en": "3 edge cases (calculation notes)"}, "count": 3}, {"criterion": {"es": "3 elegidas por el arquitecto (desde mapa)", "en": "3 chosen by the architect (from map)"}, "count": 3}]}, "part4": {"title": {"es": "Parte 4: Preguntas abiertas", "en": "Part 4: Open questions"}, "questions": {"o1": {"text": {"es": "Que tipos de parcelas en Barcelona se sobreestiman mas frecuentemente en capacidad? Por que?", "en": "Which types of parcels in Barcelona are most frequently overestimated in capacity? Why?"}, "type": "textarea"}, "o2": {"text": {"es": "Que restricciones normativas no contempla nuestro algoritmo?", "en": "What regulatory restrictions does our algorithm not account for?"}, "type": "textarea"}, "o3": {"text": {"es": "Como valora el realismo del enfoque superficie x FAR = viviendas? Que enfoque es mas preciso?", "en": "How do you rate the realism of the area x FAR = apartments approach? What approach is more accurate?"}, "type": "textarea"}, "o4": {"text": {"es": "Existen zonas de Barcelona donde la edificacion esta formalmente permitida pero es practicamente imposible?", "en": "Are there zones in Barcelona where construction is formally permitted but practically impossible?"}, "type": "textarea"}, "o5": {"text": {"es": "Que datos serian mas utiles para mejorar la precision del calculo?", "en": "What data would be most useful to improve calculation accuracy?"}, "type": "textarea"}, "o6": {"text": {"es": "Que distritos considera mas prometedores actualmente para la construccion residencial?", "en": "Which districts do you consider most promising currently for residential construction?"}, "type": "textarea"}, "o7": {"text": {"es": "Cuantos anos de experiencia tiene como arquitecto en Barcelona?", "en": "How many years of experience do you have as an architect in Barcelona?"}, "type": "dropdown", "options": [{"value": "lt5", "es": "Menos de 5 anos", "en": "Less than 5 years"}, {"value": "5_10", "es": "5-10 anos", "en": "5-10 years"}, {"value": "10_20", "es": "10-20 anos", "en": "10-20 years"}, {"value": "gt20", "es": "Mas de 20 anos", "en": "More than 20 years"}]}}}, "ui": {"confirm": {"es": "Confirmar", "en": "Confirm"}, "skip": {"es": "Omitir", "en": "Skip"}, "next": {"es": "Siguiente", "en": "Next"}, "previous": {"es": "Anterior", "en": "Previous"}, "submit": {"es": "Enviar", "en": "Submit"}, "download": {"es": "Descargar respuestas", "en": "Download answers"}, "progress": {"es": "Progreso", "en": "Progress"}, "part": {"es": "Parte", "en": "Part"}, "of": {"es": "de", "en": "of"}, "yes": {"es": "Si", "en": "Yes"}, "no": {"es": "No", "en": "No"}, "depends": {"es": "Depende", "en": "Depends"}, "correct_value": {"es": "El valor correcto es", "en": "The correct value is"}, "lang_toggle_both": {"es": "ES + EN", "en": "ES + EN"}, "lang_toggle_es": {"es": "Solo espanol", "en": "Spanish only"}, "lang_toggle_en": {"es": "Solo ingles", "en": "English only"}, "welcome_name": {"es": "Nombre", "en": "Name"}, "welcome_email": {"es": "Correo electronico", "en": "Email"}, "welcome_start": {"es": "Comenzar encuesta", "en": "Start survey"}, "review_title": {"es": "Revision de respuestas", "en": "Review answers"}, "review_edit": {"es": "Modificar", "en": "Edit"}, "review_submit": {"es": "Enviar respuestas", "en": "Submit answers"}, "thank_you": {"es": "Gracias por su participacion!", "en": "Thank you for your participation!"}, "saved_auto": {"es": "Guardado automaticamente", "en": "Auto-saved"}, "apartments": {"es": "viviendas", "en": "apartments"}, "parcels": {"es": "parcelas", "en": "parcels"}, "area": {"es": "Superficie", "en": "Area"}, "street_width": {"es": "Ancho de vial", "en": "Street width"}, "height": {"es": "Altura", "en": "Height"}, "floors": {"es": "Plantas", "en": "Floors"}, "realistic": {"es": "Es realista este calculo?", "en": "Is this calculation realistic?"}, "overestimated": {"es": "Sobreestimado", "en": "Overestimated"}, "underestimated": {"es": "Subestimado", "en": "Underestimated"}, "how_many_apartments": {"es": "Cuantas viviendas proyectaria?", "en": "How many apartments would you plan?"}, "factors_not_covered": {"es": "Que factores no contempla el algoritmo?", "en": "What factors does the algorithm not cover?"}}};
+
+// ===========================
+// DEFAULT DATA (fallback)
+// ===========================
+function getDefaultClauData() {
+  return [
+    { code: '18', name_es: 'Zona de volumetria espec\u00edfica', name_en: 'Specific volumetry zone', parcels: 508, apartments: 762, confidence: 'low', far: 1.5, max_height: 15.4, coverage: 100, depth: 12.0, building_type: 'Plurifamiliar', lat: 41.3874, lng: 2.1686 },
+    { code: '13b', name_es: 'Densificaci\u00f3n semiintensiva', name_en: 'Semi-intensive densification', parcels: 240, apartments: 267, confidence: 'medium', far: 1.5, max_height: null, coverage: 100, depth: 12.0, building_type: 'Plurifamiliar + comercial', lat: 41.3930, lng: 2.1750 },
+    { code: '13a', name_es: 'Densificaci\u00f3n intensiva', name_en: 'Intensive densification', parcels: 78, apartments: 156, confidence: 'medium', far: 2.2, max_height: null, coverage: 100, depth: 16.0, building_type: 'Plurifamiliar + comercial', lat: 41.3890, lng: 2.1700 },
+    { code: '12', name_es: 'Casco antiguo', name_en: 'Old town', parcels: 110, apartments: 88, confidence: 'low-medium', far: 2.0, max_height: 16.7, coverage: 100, depth: 20.0, building_type: 'Plurifamiliar', lat: 41.3820, lng: 2.1760 },
+    { code: '13E', name_es: 'Eixample', name_en: 'Eixample', parcels: 51, apartments: 102, confidence: 'medium', far: 2.0, max_height: 24.4, coverage: 70, depth: 28.0, building_type: 'Plurifamiliar + comercial', lat: 41.3920, lng: 2.1640 },
+    { code: '20a', name_es: 'Ordenaci\u00f3n volum\u00e9trica', name_en: 'Volumetric ordering', parcels: 342, apartments: 0, confidence: 'high', far: 1.0, max_height: null, coverage: 60, depth: null, building_type: 'Mixto', lat: 41.4000, lng: 2.1800 },
+    { code: '15', name_es: 'Conservaci\u00f3n de estructura', name_en: 'Structure conservation', parcels: 46, apartments: 23, confidence: 'low-medium', far: 0.88, max_height: 9.15, coverage: 50, depth: null, building_type: 'Plurifamiliar', lat: 41.3850, lng: 2.1650 },
+    { code: '16', name_es: 'Unifamiliar', name_en: 'Single-family', parcels: 52, apartments: 52, confidence: 'high', far: 0.5, max_height: 9.15, coverage: 40, depth: null, building_type: 'Unifamiliar', lat: 41.4100, lng: 2.1500 },
+    { code: 'EA', name_es: 'Edificaci\u00f3n a\u00edslada', name_en: 'Detached building', parcels: 174, apartments: 174, confidence: 'high', far: 0.4, max_height: 9.15, coverage: 20, depth: null, building_type: 'Unifamiliar a\u00edslada', lat: 41.4200, lng: 2.1400 },
+    { code: '22@T', name_es: 'Transformaci\u00f3n 22@', name_en: '22@ Transformation', parcels: 8, apartments: 24, confidence: 'medium', far: 2.65, max_height: 24.0, coverage: 70, depth: null, building_type: 'Mixto', lat: 41.4030, lng: 2.1940 }
+  ];
+}
+
+function getDefaultParcelData() {
+  return [
+    { id: '0655156DF3805F', address: 'C de Mallorca 245, Eixample', clau: '13b', area_m2: 342, street_width: 12.0, far: 1.5, gfa: 513, apartments: 6, mix: '2xT1+3xT2+1xT3', height: 15.4, floors: 'PB+3', hpo: 2, confidence: 'medium', lat: 41.3925, lng: 2.1654 },
+    { id: '9101232DF3801A', address: 'C de Val\u00e8ncia 320, Eixample', clau: '13E', area_m2: 580, street_width: 20.0, far: 2.0, gfa: 1160, apartments: 14, mix: '3xT1+6xT2+5xT3', height: 24.4, floors: 'PB+6', hpo: 4, confidence: 'medium', lat: 41.3960, lng: 2.1680 },
+    { id: '7823001DF3812C', address: 'C del Rec 42, Ciutat Vella', clau: '12', area_m2: 156, street_width: 6.0, far: 2.0, gfa: 312, apartments: 3, mix: '1xT1+1xT2+1xT3', height: 12.8, floors: 'PB+2', hpo: 1, confidence: 'low', lat: 41.3845, lng: 2.1810 },
+    { id: '4401018DF2800D', address: 'C de Pere IV 215, Sant Mart\u00ed', clau: '18', area_m2: 890, street_width: 15.0, far: 1.5, gfa: 1335, apartments: 16, mix: '3xT1+7xT2+6xT3', height: 15.4, floors: 'PB+3', hpo: 5, confidence: 'low', lat: 41.4050, lng: 2.1980 },
+    { id: '5502034DF2805E', address: 'Av Diagonal 340, Eixample', clau: '13a', area_m2: 720, street_width: 50.0, far: 2.2, gfa: 1584, apartments: 19, mix: '4xT1+9xT2+6xT3', height: 24.4, floors: 'PB+6', hpo: 6, confidence: 'medium', lat: 41.3940, lng: 2.1700 },
+    { id: '3300012DF2809B', address: 'C de Sardenya 55, Sant Mart\u00ed', clau: '18', area_m2: 430, street_width: 10.0, far: 1.5, gfa: 645, apartments: 8, mix: '2xT1+3xT2+3xT3', height: 15.4, floors: 'PB+3', hpo: 2, confidence: 'low', lat: 41.4010, lng: 2.1890 },
+    { id: '6601045DF3800G', address: 'C de Proven\u00e7a 180, Eixample', clau: '13E', area_m2: 480, street_width: 20.0, far: 2.0, gfa: 960, apartments: 12, mix: '2xT1+5xT2+5xT3', height: 24.4, floors: 'PB+6', hpo: 4, confidence: 'medium', lat: 41.3910, lng: 2.1590 },
+    { id: '8801567DF3801H', address: 'Pg de Gr\u00e0cia 25, Eixample', clau: '13a', area_m2: 950, street_width: 30.0, far: 2.2, gfa: 2090, apartments: 26, mix: '5xT1+12xT2+9xT3', height: 24.4, floors: 'PB+6', hpo: 8, confidence: 'medium', lat: 41.3905, lng: 2.1660 },
+    { id: '1100234DF2815K', address: 'C de Collserola 12, Sarri\u00e0', clau: '16', area_m2: 800, street_width: 8.0, far: 0.5, gfa: 400, apartments: 1, mix: '1xT3', height: 9.15, floors: 'PB+1', hpo: 0, confidence: 'high', lat: 41.4150, lng: 2.1280 },
+    { id: '2200567DF2820L', address: 'C de Vallvidrera 45, Sarri\u00e0', clau: 'EA', area_m2: 1200, street_width: 6.0, far: 0.4, gfa: 480, apartments: 1, mix: '1xT3', height: 9.15, floors: 'PB+1', hpo: 0, confidence: 'high', lat: 41.4200, lng: 2.1150 }
+  ];
+}
+
+// ===========================
+// LEAFLET MAP
+// ===========================
+function initMap(containerId, lat, lng, zoom) {
+  // Destroy existing map if any
+  if (leafletMaps[containerId]) {
+    leafletMaps[containerId].remove();
+    delete leafletMaps[containerId];
+  }
+  const container = document.getElementById(containerId);
+  if (!container) return null;
+  // Ensure container has dimensions
+  container.style.height = '300px';
+
+  const map = L.map(containerId).setView([lat, lng], zoom || 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  L.marker([lat, lng]).addTo(map);
+  leafletMaps[containerId] = map;
+
+  // Fix tile loading issue
+  setTimeout(() => map.invalidateSize(), 200);
+  return map;
+}
+
+// ===========================
+// CLAU CARDS
+// ===========================
+function renderClauCard(index) {
+  if (!clauData.length) return;
+  if (index < 0) index = 0;
+  if (index >= clauData.length) index = clauData.length - 1;
+  currentClauIndex = index;
+
+  const c = clauData[index];
+  const cardId = `clau-card-${index}`;
+  const mapId = `clau-map-${index}`;
+  const savedClau = answers[`clau_${c.code}`] || {};
+
+  const container = document.getElementById('clau-card-container');
+  container.innerHTML = `
+    <div class="card" id="${cardId}">
+      <div class="card-header">
+        <h2>
+          <span class="lang-es">CLAU ${c.code} &mdash; ${c.name_es}</span><br>
+          <span class="lang-en">${c.name_en}</span>
+        </h2>
+        <p class="card-meta">
+          <span class="lang-es">Parcelas: ${c.parcels} | Viviendas calculadas: ${c.apartments} | Confidence: ${c.confidence}</span><br>
+          <span class="lang-en">Parcels: ${c.parcels} | Calculated apartments: ${c.apartments} | Confidence: ${c.confidence}</span>
+        </p>
+      </div>
+
+      <table class="param-table">
+        <thead>
+          <tr>
+            <th><span class="lang-es">Par\u00e1metro</span> / <span class="lang-en">Parameter</span></th>
+            <th><span class="lang-es">Valor</span> / <span class="lang-en">Value</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="lang-es">Edificabilidad (FAR)</span><br><span class="lang-en" style="font-size:12px;color:#aaa;">Buildability (FAR)</span></td><td>${c.far}</td></tr>
+          <tr><td><span class="lang-es">Altura m\u00e1x. (m)</span><br><span class="lang-en" style="font-size:12px;color:#aaa;">Max height (m)</span></td><td>${c.max_height || 's/vial (by street)'}</td></tr>
+          <tr><td><span class="lang-es">Ocupaci\u00f3n</span><br><span class="lang-en" style="font-size:12px;color:#aaa;">Plot coverage</span></td><td>${c.coverage}%</td></tr>
+          <tr><td><span class="lang-es">Profundidad (m)</span><br><span class="lang-en" style="font-size:12px;color:#aaa;">Building depth (m)</span></td><td>${c.depth || 'N/A'}</td></tr>
+          <tr><td><span class="lang-es">Tipo edificaci\u00f3n</span><br><span class="lang-en" style="font-size:12px;color:#aaa;">Building type</span></td><td>${c.building_type}</td></tr>
+        </tbody>
+      </table>
+
+      <div class="map-container" id="${mapId}"></div>
+
+      <!-- C.1: FAR correct? -->
+      <div class="question-block">
+        <div class="bilingual">
+          <p class="lang-es">&iquest;Es correcto el FAR=${c.far} para esta CLAU?</p>
+          <p class="lang-en">Is FAR=${c.far} correct for this CLAU?</p>
+        </div>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="clau_${c.code}_far_ok" value="si" ${savedClau.far_ok === 'si' ? 'checked' : ''} onchange="saveClauAnswer('${c.code}', 'far_ok', 'si'); document.getElementById('clau_${c.code}_far_cond').classList.remove('visible');">
+            <div class="option-text"><span class="lang-es">S\u00ed</span> <span class="lang-en">/ Yes</span></div>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="clau_${c.code}_far_ok" value="no" ${savedClau.far_ok === 'no' ? 'checked' : ''} onchange="saveClauAnswer('${c.code}', 'far_ok', 'no'); document.getElementById('clau_${c.code}_far_cond').classList.add('visible');">
+            <div class="option-text"><span class="lang-es">No, el valor correcto es:</span> <span class="lang-en">/ No, the correct value is:</span></div>
+          </label>
+        </div>
+        <div class="conditional ${savedClau.far_ok === 'no' ? 'visible' : ''}" id="clau_${c.code}_far_cond">
+          <input type="number" step="0.1" min="0" max="10" value="${savedClau.far_correct || ''}" placeholder="FAR" style="max-width:150px;" onchange="saveClauAnswer('${c.code}', 'far_correct', this.value)">
+        </div>
+      </div>
+
+      <!-- C.2: Height correct? -->
+      <div class="question-block">
+        <div class="bilingual">
+          <p class="lang-es">&iquest;Es correcta la altura m\u00e1xima de ${c.max_height || 'N/A'} m?</p>
+          <p class="lang-en">Is the max height of ${c.max_height || 'N/A'} m correct?</p>
+        </div>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="clau_${c.code}_height_ok" value="si" ${savedClau.height_ok === 'si' ? 'checked' : ''} onchange="saveClauAnswer('${c.code}', 'height_ok', 'si'); document.getElementById('clau_${c.code}_height_cond').classList.remove('visible');">
+            <div class="option-text"><span class="lang-es">S\u00ed</span> <span class="lang-en">/ Yes</span></div>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="clau_${c.code}_height_ok" value="no" ${savedClau.height_ok === 'no' ? 'checked' : ''} onchange="saveClauAnswer('${c.code}', 'height_ok', 'no'); document.getElementById('clau_${c.code}_height_cond').classList.add('visible');">
+            <div class="option-text"><span class="lang-es">No, el valor correcto es:</span> <span class="lang-en">/ No, the correct value is:</span></div>
+          </label>
+        </div>
+        <div class="conditional ${savedClau.height_ok === 'no' ? 'visible' : ''}" id="clau_${c.code}_height_cond">
+          <input type="number" step="0.1" min="0" max="100" value="${savedClau.height_correct || ''}" placeholder="m" style="max-width:150px;" onchange="saveClauAnswer('${c.code}', 'height_correct', this.value)">
+        </div>
+      </div>
+
+      <!-- C.3: Building type -->
+      <div class="question-block">
+        <div class="bilingual">
+          <p class="lang-es">&iquest;Cu\u00e1l es el tipo de edificaci\u00f3n habitual?</p>
+          <p class="lang-en">What is the typical building type?</p>
+        </div>
+        <select onchange="saveClauAnswer('${c.code}', 'building_type', this.value)">
+          <option value="">-- Seleccione / Select --</option>
+          <option value="plurifamiliar" ${savedClau.building_type === 'plurifamiliar' ? 'selected' : ''}>Plurifamiliar / Multi-family</option>
+          <option value="unifamiliar" ${savedClau.building_type === 'unifamiliar' ? 'selected' : ''}>Unifamiliar / Single-family</option>
+          <option value="adosado" ${savedClau.building_type === 'adosado' ? 'selected' : ''}>Adosado / Terraced</option>
+          <option value="mixto" ${savedClau.building_type === 'mixto' ? 'selected' : ''}>Mixto / Mixed</option>
+        </select>
+      </div>
+
+      <!-- C.4: Commercial ground floor? -->
+      <div class="question-block">
+        <div class="bilingual">
+          <p class="lang-es">&iquest;Es obligatoria la planta baja comercial?</p>
+          <p class="lang-en">Is a commercial ground floor mandatory?</p>
+        </div>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="clau_${c.code}_commercial" value="si" ${savedClau.commercial === 'si' ? 'checked' : ''} onchange="saveClauAnswer('${c.code}', 'commercial', 'si')">
+            <div class="option-text"><span class="lang-es">S\u00ed</span> <span class="lang-en">/ Yes</span></div>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="clau_${c.code}_commercial" value="no" ${savedClau.commercial === 'no' ? 'checked' : ''} onchange="saveClauAnswer('${c.code}', 'commercial', 'no')">
+            <div class="option-text"><span class="lang-es">No</span> <span class="lang-en">/ No</span></div>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="clau_${c.code}_commercial" value="segun" ${savedClau.commercial === 'segun' ? 'checked' : ''} onchange="saveClauAnswer('${c.code}', 'commercial', 'segun')">
+            <div class="option-text"><span class="lang-es">Seg\u00fan situaci\u00f3n</span> <span class="lang-en">/ Depends on situation</span></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- C.5: Additional restrictions -->
+      <div class="question-block">
+        <div class="bilingual">
+          <p class="lang-es">&iquest;Qu\u00e9 restricciones adicionales existen en esta zona?</p>
+          <p class="lang-en">What additional restrictions exist in this zone?</p>
+        </div>
+        <div class="checkbox-group">
+          <label class="checkbox-option"><input type="checkbox" value="catalogo" ${(savedClau.restrictions || []).includes('catalogo') ? 'checked' : ''} onchange="saveClauCheckbox('${c.code}')">
+            <div class="option-text"><span class="lang-es">Cat\u00e1logo</span> <span class="lang-en">/ Listed heritage</span></div>
+          </label>
+          <label class="checkbox-option"><input type="checkbox" value="servidumbres" ${(savedClau.restrictions || []).includes('servidumbres') ? 'checked' : ''} onchange="saveClauCheckbox('${c.code}')">
+            <div class="option-text"><span class="lang-es">Servidumbres</span> <span class="lang-en">/ Easements</span></div>
+          </label>
+          <label class="checkbox-option"><input type="checkbox" value="retranqueo" ${(savedClau.restrictions || []).includes('retranqueo') ? 'checked' : ''} onchange="saveClauCheckbox('${c.code}')">
+            <div class="option-text"><span class="lang-es">Retranqueo m\u00ednimo</span> <span class="lang-en">/ Minimum setback</span></div>
+          </label>
+          <label class="checkbox-option"><input type="checkbox" value="patio" ${(savedClau.restrictions || []).includes('patio') ? 'checked' : ''} onchange="saveClauCheckbox('${c.code}')">
+            <div class="option-text"><span class="lang-es">Patio interior</span> <span class="lang-en">/ Interior courtyard</span></div>
+          </label>
+          <label class="checkbox-option"><input type="checkbox" value="otro" ${(savedClau.restrictions || []).includes('otro') ? 'checked' : ''} onchange="saveClauCheckbox('${c.code}')">
+            <div class="option-text"><span class="lang-es">Otro</span> <span class="lang-en">/ Other</span></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- C.6: Free comment -->
+      <div class="question-block">
+        <div class="bilingual">
+          <p class="lang-es">Comentario libre</p>
+          <p class="lang-en">Free comment</p>
+        </div>
+        <textarea placeholder="..." onchange="saveClauAnswer('${c.code}', 'comment', this.value)">${savedClau.comment || ''}</textarea>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="confirmClauCard()">
+          <span class="lang-es">Confirmar</span> / <span class="lang-en">Confirm</span>
+        </button>
+        <button class="btn btn-secondary" onclick="skipClauCard()">
+          <span class="lang-es">Omitir</span> / <span class="lang-en">Skip</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Update counter
+  document.getElementById('clau-nav').style.display = 'flex';
+  document.getElementById('clau-counter').textContent = `${index + 1} / ${clauData.length}`;
+
+  // Init map
+  if (c.lat && c.lng) {
+    setTimeout(() => initMap(mapId, c.lat, c.lng, 15), 150);
+  }
+}
+
+function saveClauAnswer(code, field, value) {
+  if (!answers[`clau_${code}`]) answers[`clau_${code}`] = {};
+  answers[`clau_${code}`][field] = value;
+  saveProgress();
+}
+
+function saveClauCheckbox(code) {
+  const card = document.getElementById('clau-card-container');
+  const checked = [];
+  card.querySelectorAll('.checkbox-option input[type="checkbox"]').forEach(cb => {
+    if (cb.checked) checked.push(cb.value);
+  });
+  saveClauAnswer(code, 'restrictions', checked);
+}
+
+function confirmClauCard() {
+  const c = clauData[currentClauIndex];
+  saveClauAnswer(c.code, 'status', 'confirmed');
+  nextClauCard();
+}
+
+function skipClauCard() {
+  const c = clauData[currentClauIndex];
+  saveClauAnswer(c.code, 'status', 'skipped');
+  nextClauCard();
+}
+
+function prevClauCard() {
+  if (currentClauIndex > 0) renderClauCard(currentClauIndex - 1);
+}
+
+function nextClauCard() {
+  if (currentClauIndex < clauData.length - 1) {
+    renderClauCard(currentClauIndex + 1);
+    window.scrollTo(0, document.getElementById('section-2').offsetTop);
+  }
+}
+
+// ===========================
+// PARCEL CARDS
+// ===========================
+function renderParcelCard(index) {
+  if (!parcelData.length) return;
+  if (index < 0) index = 0;
+  if (index >= parcelData.length) index = parcelData.length - 1;
+  currentParcelIndex = index;
+
+  const p = parcelData[index];
+  const mapId = `parcel-map-${index}`;
+  const saved = answers[`parcel_${p.id}`] || {};
+
+  const container = document.getElementById('parcel-card-container');
+  container.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <h2>
+          <span class="lang-es">Parcela</span> / <span class="lang-en">Parcel</span> ${p.id}
+        </h2>
+        <p class="card-meta" style="font-size:15px; color:#333; font-weight:500;">${p.address}</p>
+        <p class="card-meta">
+          <span class="lang-es">CLAU: ${p.clau} | Superficie: ${p.area_m2} m\u00b2 | Vial: ${p.street_width} m</span><br>
+          <span class="lang-en">CLAU: ${p.clau} | Area: ${p.area_m2} m\u00b2 | Street: ${p.street_width} m</span>
+        </p>
+      </div>
+
+      <div class="map-container" id="${mapId}"></div>
+
+      <div style="margin:12px 0;">
+        <a href="https://www.google.com/maps/@${p.lat},${p.lng},18z" target="_blank"
+           style="font-size:13px;color:#1976D2;text-decoration:none;">
+          🗺 <span class="lang-es">Abrir en Google Maps</span> <span class="lang-en">/ Open in Google Maps</span>
+        </a>
+        &nbsp;&nbsp;
+        <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${p.lat},${p.lng}" target="_blank"
+           style="font-size:13px;color:#1976D2;text-decoration:none;">
+          📷 Street View
+        </a>
+      </div>
+
+      <div class="calc-summary">
+        <strong><span class="lang-es">C\u00e1lculo del algoritmo</span> / <span class="lang-en">Algorithm calculation</span>:</strong><br>
+        <span class="lang-es">FAR=${p.far} \u2192 SBA=${p.gfa} m\u00b2 \u2192 ${p.apartments} viviendas (${p.mix})</span><br>
+        <span class="lang-en">FAR=${p.far} \u2192 GFA=${p.gfa} m\u00b2 \u2192 ${p.apartments} apartments (${p.mix})</span><br>
+        <span class="lang-es">Altura: ${p.height} m (${p.floors}, vial ${p.street_width} m)</span><br>
+        <span class="lang-en">Height: ${p.height} m (${p.floors}, street ${p.street_width} m)</span><br>
+        <span class="lang-es">HPO: ${p.hpo} viviendas</span> / <span class="lang-en">${p.hpo} apartments</span>
+      </div>
+
+      <!-- Realistic? -->
+      <div class="question-block">
+        <div class="bilingual">
+          <p class="lang-es">&iquest;Es realista este c\u00e1lculo?</p>
+          <p class="lang-en">Is this calculation realistic?</p>
+        </div>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="parcel_${p.id}_realistic" value="si" ${saved.realistic === 'si' ? 'checked' : ''} onchange="saveParcelAnswer('${p.id}', 'realistic', 'si')">
+            <div class="option-text"><span class="lang-es">S\u00ed</span> <span class="lang-en">/ Yes</span></div>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="parcel_${p.id}_realistic" value="sobreestimado" ${saved.realistic === 'sobreestimado' ? 'checked' : ''} onchange="saveParcelAnswer('${p.id}', 'realistic', 'sobreestimado')">
+            <div class="option-text"><span class="lang-es">Sobreestimado</span> <span class="lang-en">/ Overestimated</span></div>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="parcel_${p.id}_realistic" value="subestimado" ${saved.realistic === 'subestimado' ? 'checked' : ''} onchange="saveParcelAnswer('${p.id}', 'realistic', 'subestimado')">
+            <div class="option-text"><span class="lang-es">Subestimado</span> <span class="lang-en">/ Underestimated</span></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Architect count -->
+      <div class="question-block">
+        <div class="bilingual">
+          <p class="lang-es">&iquest;Cu\u00e1ntas viviendas proyectar\u00eda en esta parcela?</p>
+          <p class="lang-en">How many apartments would you plan on this parcel?</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="number" min="0" max="200" value="${saved.architect_apartments || ''}" style="max-width:120px;" onchange="saveParcelAnswer('${p.id}', 'architect_apartments', this.value)">
+          <span><span class="lang-es">viviendas</span> / <span class="lang-en">apartments</span></span>
+        </div>
+      </div>
+
+      <!-- Factors not covered -->
+      <div class="question-block">
+        <div class="bilingual">
+          <p class="lang-es">&iquest;Qu\u00e9 factores no contempla el algoritmo?</p>
+          <p class="lang-en">What factors does the algorithm not account for?</p>
+        </div>
+        <div class="checkbox-group">
+          <label class="checkbox-option">
+            <input type="checkbox" value="no_vacia" ${(saved.factors || []).includes('no_vacia') ? 'checked' : ''} onchange="saveParcelCheckbox('${p.id}')">
+            <div class="option-text">
+              <span class="lang-es">La parcela no est\u00e1 realmente vac\u00eda</span><br>
+              <span class="lang-en">The parcel is not actually vacant</span>
+            </div>
+          </label>
+          <label class="checkbox-option">
+            <input type="checkbox" value="subterraneas" ${(saved.factors || []).includes('subterraneas') ? 'checked' : ''} onchange="saveParcelCheckbox('${p.id}')">
+            <div class="option-text">
+              <span class="lang-es">Hay instalaciones subterr\u00e1neas / restricciones</span><br>
+              <span class="lang-en">There are underground utilities / restrictions</span>
+            </div>
+          </label>
+          <label class="checkbox-option">
+            <input type="checkbox" value="catalogado" ${(saved.factors || []).includes('catalogado') ? 'checked' : ''} onchange="saveParcelCheckbox('${p.id}')">
+            <div class="option-text">
+              <span class="lang-es">Edificio catalogado pr\u00f3ximo</span><br>
+              <span class="lang-en">Listed building nearby</span>
+            </div>
+          </label>
+          <label class="checkbox-option">
+            <input type="checkbox" value="forma" ${(saved.factors || []).includes('forma') ? 'checked' : ''} onchange="saveParcelCheckbox('${p.id}')">
+            <div class="option-text">
+              <span class="lang-es">La forma de la parcela impide la edificaci\u00f3n</span><br>
+              <span class="lang-en">The parcel shape prevents construction</span>
+            </div>
+          </label>
+          <label class="checkbox-option">
+            <input type="checkbox" value="otro" ${(saved.factors || []).includes('otro') ? 'checked' : ''} onchange="saveParcelCheckbox('${p.id}')">
+            <div class="option-text">
+              <span class="lang-es">Otro</span> / <span class="lang-en">Other</span>
+            </div>
+          </label>
+        </div>
+        <div class="conditional ${(saved.factors || []).includes('otro') ? 'visible' : ''}" id="parcel_${p.id}_other_cond">
+          <input type="text" value="${saved.other_detail || ''}" placeholder="Especifique / Specify..." onchange="saveParcelAnswer('${p.id}', 'other_detail', this.value)">
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="confirmParcelCard()">
+          <span class="lang-es">Confirmar</span> / <span class="lang-en">Confirm</span>
+        </button>
+        <button class="btn btn-secondary" onclick="skipParcelCard()">
+          <span class="lang-es">Omitir</span> / <span class="lang-en">Skip</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Update counter
+  document.getElementById('parcel-nav').style.display = 'flex';
+  document.getElementById('parcel-counter').textContent = `${index + 1} / ${parcelData.length}`;
+
+  // Init map
+  if (p.lat && p.lng) {
+    setTimeout(() => initMap(mapId, p.lat, p.lng, 18), 150);
+  }
+}
+
+function saveParcelAnswer(id, field, value) {
+  if (!answers[`parcel_${id}`]) answers[`parcel_${id}`] = {};
+  answers[`parcel_${id}`][field] = value;
+  saveProgress();
+}
+
+function saveParcelCheckbox(id) {
+  const card = document.getElementById('parcel-card-container');
+  const checked = [];
+  card.querySelectorAll('.checkbox-option input[type="checkbox"]').forEach(cb => {
+    if (cb.checked) checked.push(cb.value);
+  });
+  saveParcelAnswer(id, 'factors', checked);
+  // Show/hide "other" conditional
+  const otherCond = document.getElementById(`parcel_${id}_other_cond`);
+  if (otherCond) {
+    otherCond.classList.toggle('visible', checked.includes('otro'));
+  }
+}
+
+function confirmParcelCard() {
+  const p = parcelData[currentParcelIndex];
+  saveParcelAnswer(p.id, 'status', 'confirmed');
+  nextParcelCard();
+}
+
+function skipParcelCard() {
+  const p = parcelData[currentParcelIndex];
+  saveParcelAnswer(p.id, 'status', 'skipped');
+  nextParcelCard();
+}
+
+function prevParcelCard() {
+  if (currentParcelIndex > 0) renderParcelCard(currentParcelIndex - 1);
+}
+
+function nextParcelCard() {
+  if (currentParcelIndex < parcelData.length - 1) {
+    renderParcelCard(currentParcelIndex + 1);
+    window.scrollTo(0, document.getElementById('section-3').offsetTop);
+  }
+}
+
+// ===========================
+// REVIEW
+// ===========================
+function renderReview() {
+  const container = document.getElementById('review-content');
+  let html = '';
+
+  // Respondent info
+  html += `<div class="review-section">
+    <h3><span class="lang-es">Informaci\u00f3n del encuestado</span> / <span class="lang-en">Respondent info</span></h3>
+    <div class="review-item"><span class="review-key">Nombre / Name</span><span class="review-value">${answers.respondent_name || '-'}</span></div>
+    <div class="review-item"><span class="review-key">Email</span><span class="review-value">${answers.respondent_email || '-'}</span></div>
+  </div>`;
+
+  // Part 1
+  html += `<div class="review-section">
+    <h3><span class="lang-es">Parte 1: Par\u00e1metros generales</span> / <span class="lang-en">Part 1: General parameters</span>
+      <span class="edit-link" onclick="showSection(1)">Modificar / Edit</span></h3>`;
+
+  const part1Keys = [
+    ['q1_1', 'T1 size', 'm\u00b2'], ['q1_2', 'T2 size', 'm\u00b2'], ['q1_3', 'T3 size', 'm\u00b2'], ['q1_4', 'Min. area', 'm\u00b2'],
+    ['mix_t1', 'Mix T1', '%'], ['mix_t2', 'Mix T2', '%'], ['mix_t3', 'Mix T3', '%'],
+    ['q3_1', 'Common areas', '%'], ['q3_2', 'Height-dependent', ''], ['q3_3', 'Parking in GFA', ''],
+    ['q4_2', 'Commercial GF height', 'm'], ['q4_3', 'Commercial GF proportion', '%'],
+    ['q5_1', 'Art. 323 limiting', ''], ['q6_1', 'HPO 30%', ''], ['q6_3', 'HPO typology', '']
+  ];
+  part1Keys.forEach(([key, label, unit]) => {
+    const val = answers[key];
+    html += `<div class="review-item"><span class="review-key">${label}</span><span class="review-value">${val !== undefined ? val + (unit ? ' ' + unit : '') : '-'}</span></div>`;
+  });
+  html += `</div>`;
+
+  // Part 2
+  html += `<div class="review-section">
+    <h3><span class="lang-es">Parte 2: CLAU</span> / <span class="lang-en">Part 2: CLAU</span>
+      <span class="edit-link" onclick="showSection(2)">Modificar / Edit</span></h3>`;
+  clauData.forEach(c => {
+    const sc = answers[`clau_${c.code}`];
+    if (sc) {
+      const status = sc.status || 'pending';
+      const farNote = sc.far_ok === 'no' ? ` (corrected: ${sc.far_correct})` : '';
+      html += `<div class="review-item"><span class="review-key">CLAU ${c.code}</span><span class="review-value">${status}${farNote}</span></div>`;
+    }
+  });
+  html += `</div>`;
+
+  // Part 3
+  html += `<div class="review-section">
+    <h3><span class="lang-es">Parte 3: Parcelas</span> / <span class="lang-en">Part 3: Parcels</span>
+      <span class="edit-link" onclick="showSection(3)">Modificar / Edit</span></h3>`;
+  parcelData.forEach(p => {
+    const sp = answers[`parcel_${p.id}`];
+    if (sp) {
+      const realism = sp.realistic || '-';
+      const count = sp.architect_apartments ? ` (${sp.architect_apartments} apt)` : '';
+      html += `<div class="review-item"><span class="review-key">${p.id}</span><span class="review-value">${realism}${count}</span></div>`;
+    }
+  });
+  html += `</div>`;
+
+  // Part 4
+  html += `<div class="review-section">
+    <h3><span class="lang-es">Parte 4: Preguntas abiertas</span> / <span class="lang-en">Part 4: Open questions</span>
+      <span class="edit-link" onclick="showSection(4)">Modificar / Edit</span></h3>`;
+  for (let i = 1; i <= 7; i++) {
+    const val = answers[`o${i}`];
+    const preview = val ? (val.length > 60 ? val.substring(0, 60) + '...' : val) : '-';
+    html += `<div class="review-item"><span class="review-key">O.${i}</span><span class="review-value">${preview}</span></div>`;
+  }
+  html += `</div>`;
+
+  container.innerHTML = html;
+}
+
+</script>
+</body>
+</html>
