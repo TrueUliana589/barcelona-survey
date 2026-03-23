@@ -538,6 +538,24 @@ textarea { min-height: 100px; resize: vertical; }
   </div>
 </div>
 
+<!-- ===== RESPONDENT INFO ===== -->
+<div style="background:#f8f9fa; border:1px solid #dee2e6; border-radius:8px; padding:20px; margin-bottom:24px;">
+  <div style="margin-bottom:12px;">
+    <label style="font-weight:600; display:block; margin-bottom:4px;">
+      <span class="lang-es">Nombre / </span>
+      <span class="lang-en">Name</span>
+    </label>
+    <input type="text" id="respondent-name" placeholder="Su nombre / Your name" style="width:100%; max-width:400px;">
+  </div>
+  <div>
+    <label style="font-weight:600; display:block; margin-bottom:4px;">
+      <span class="lang-es">Email / </span>
+      <span class="lang-en">Email</span>
+    </label>
+    <input type="email" id="respondent-email" placeholder="correo@ejemplo.com" style="width:100%; max-width:400px;">
+  </div>
+</div>
+
 <!-- ================================================================ -->
 <!-- ===== PART 1: GENERAL PARAMETERS ===== -->
 <!-- ================================================================ -->
@@ -2095,6 +2113,8 @@ function gatherAllAnswers() {
   const answers = {
     timestamp: new Date().toISOString(),
     survey_version: 'v2',
+    respondent_name: document.getElementById('respondent-name').value || '',
+    respondent_email: document.getElementById('respondent-email').value || '',
 
     // Part 1
     part1_parameters: {
