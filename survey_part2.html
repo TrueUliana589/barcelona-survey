@@ -21,6 +21,7 @@ body {
   padding: 20px;
   background: #fff;
   min-height: 100vh;
+  padding-bottom: 80px;
 }
 
 /* ===== PROGRESS BAR ===== */
@@ -489,6 +490,34 @@ textarea { min-height: 100px; resize: vertical; }
   width: 80px;
 }
 
+/* ===== FLOATING SUBMIT ===== */
+.floating-submit {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #e0e0e0;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 1000;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+}
+.floating-submit .btn-success {
+  padding: 14px 40px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.floating-submit .submit-status {
+  font-size: 14px;
+  max-width: 300px;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
   .container { padding: 12px; }
@@ -898,6 +927,15 @@ textarea { min-height: 100px; resize: vertical; }
 </div>
 
 </div><!-- end container -->
+
+<!-- ===== FLOATING SUBMIT BUTTON ===== -->
+<div class="floating-submit">
+  <button class="btn btn-success" onclick="submitToSheets()" id="floatingSubmitBtn">
+    <span class="lang-es">Enviar respuestas</span>
+    <span class="lang-en">Submit answers</span>
+  </button>
+  <span class="submit-status" id="floatingSubmitStatus"></span>
+</div>
 
 <script>
 // ===== PARCEL DATA =====
@@ -1985,11 +2023,11 @@ function escapeHtml(text) {
 
 // ===== SUBMIT TO GOOGLE SHEETS =====
 async function submitToSheets() {
-  const btn = document.getElementById('submitBtn');
-  const status = document.getElementById('submitStatus');
-  btn.disabled = true;
-  btn.textContent = 'Enviando...';
-  status.innerHTML = '';
+  saveCurrentParcelAnswers();
+  const btns = [document.getElementById('submitBtn'), document.getElementById('floatingSubmitBtn')].filter(Boolean);
+  const statuses = [document.getElementById('submitStatus'), document.getElementById('floatingSubmitStatus')].filter(Boolean);
+  btns.forEach(b => { b.disabled = true; b.textContent = 'Enviando...'; });
+  statuses.forEach(s => { s.innerHTML = ''; });
 
   const answers = gatherAllAnswers();
 
@@ -2000,12 +2038,15 @@ async function submitToSheets() {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(answers)
     });
-    status.innerHTML = '<div class="info-box"><span class="lang-es">Respuestas enviadas correctamente. Gracias por su participacion!</span><span class="lang-en">Answers submitted successfully. Thank you for your participation!</span></div>';
-    btn.textContent = 'Enviado!';
+    statuses.forEach(s => { s.innerHTML = '<span style="color:#2e7d32;">Enviado / Submitted!</span>'; });
+    btns.forEach(b => { b.textContent = 'Enviado!'; b.disabled = false; });
+    setTimeout(() => {
+      btns.forEach(b => { b.innerHTML = '<span class="lang-es">Enviar respuestas</span><span class="lang-en">Submit answers</span>'; });
+      statuses.forEach(s => { s.innerHTML = ''; });
+    }, 3000);
   } catch (err) {
-    status.innerHTML = '<div class="warning-box"><span class="lang-es">Error al enviar. Por favor intente de nuevo.</span><span class="lang-en">Error submitting. Please try again.</span></div>';
-    btn.disabled = false;
-    btn.innerHTML = '<span class="lang-es">Reintentar</span><span class="lang-en">Retry</span>';
+    statuses.forEach(s => { s.innerHTML = '<span style="color:#c62828;">Error</span>'; });
+    btns.forEach(b => { b.disabled = false; b.innerHTML = '<span class="lang-es">Reintentar</span><span class="lang-en">Retry</span>'; });
   }
 }
 
