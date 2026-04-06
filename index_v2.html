@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Encuesta Parte 2 - Validacion de Parcelas - Barcelona Land Capacity</title>
+<title>Encuesta Arquitecto v2 - Barcelona Land Capacity</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -21,7 +21,6 @@ body {
   padding: 20px;
   background: #fff;
   min-height: 100vh;
-  padding-bottom: 80px;
 }
 
 /* ===== PROGRESS BAR ===== */
@@ -98,32 +97,6 @@ body {
   border: 1px solid #ccc;
   background: #fff;
   cursor: pointer;
-}
-.lang-banner {
-  background: #e8f4fd;
-  border: 2px solid #90caf9;
-  border-radius: 10px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.lang-banner-text {
-  font-size: 15px;
-  color: #1565C0;
-  font-weight: 500;
-}
-.lang-banner .lang-toggle {
-  gap: 6px;
-}
-.lang-banner .lang-toggle button {
-  padding: 10px 20px;
-  font-size: 15px;
-  font-weight: 600;
-  border: 2px solid #90caf9;
-  border-radius: 6px;
   font-size: 13px;
   border-radius: 4px;
   transition: all 0.2s;
@@ -202,6 +175,60 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 2px rgba(25,118,210,0.15);
 }
 textarea { min-height: 100px; resize: vertical; }
+
+/* ===== SLIDER ===== */
+.slider-container {
+  margin: 12px 0;
+  position: relative;
+}
+.slider-container input[type="range"] {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #e0e0e0;
+  border-radius: 3px;
+  outline: none;
+}
+.slider-container input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1976D2;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.slider-container input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1976D2;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.slider-value {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1976D2;
+  min-width: 60px;
+  text-align: center;
+}
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+}
+.algo-default-marker {
+  font-size: 12px;
+  color: #2196F3;
+  margin-top: 4px;
+}
 
 /* ===== RADIO & CHECKBOX ===== */
 .radio-group, .checkbox-group {
@@ -452,72 +479,6 @@ textarea { min-height: 100px; resize: vertical; }
   font-size: 14px;
 }
 
-/* ===== RESTORE NOTIFICATION ===== */
-.restore-notification {
-  background: #e3f2fd;
-  border: 1px solid #90caf9;
-  border-radius: 6px;
-  padding: 10px 16px;
-  margin-bottom: 16px;
-  font-size: 13px;
-  color: #1565c0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.restore-notification button {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: #1565c0;
-  padding: 0 4px;
-}
-
-/* ===== INLINE INPUTS ===== */
-.inline-inputs {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.inline-inputs label {
-  font-size: 13px;
-  color: #555;
-  font-weight: 500;
-}
-.inline-inputs input[type="number"] {
-  width: 80px;
-}
-
-/* ===== FLOATING SUBMIT ===== */
-.floating-submit {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid #e0e0e0;
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  z-index: 1000;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
-}
-.floating-submit .btn-success {
-  padding: 14px 40px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
-}
-.floating-submit .submit-status {
-  font-size: 14px;
-  max-width: 300px;
-}
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
   .container { padding: 12px; }
@@ -543,20 +504,38 @@ textarea { min-height: 100px; resize: vertical; }
 <!-- ===== HEADER ===== -->
 <div class="header">
   <h1>
-    <span class="lang-es">Encuesta Parte 2 - Validacion de Parcelas</span>
-    <span class="lang-en">Survey Part 2 - Parcel Validation</span>
+    <span class="lang-es">Encuesta de Validacion - Capacidad Edificatoria</span>
+    <span class="lang-en">Validation Survey - Building Capacity</span>
   </h1>
   <div class="lang-toggle">
-    <button class="active" data-lang="es" onclick="setLang('es')">ES</button>
-    <button data-lang="en" onclick="setLang('en')">EN</button>
-    <button data-lang="both" onclick="setLang('both')">ES/EN</button>
+    <button class="active" onclick="setLang('es')">ES</button>
+    <button onclick="setLang('en')">EN</button>
+    <button onclick="setLang('both')">ES/EN</button>
   </div>
 </div>
 
-<!-- ===== RESTORE NOTIFICATION (hidden by default) ===== -->
-<div id="restoreNotification" style="display:none;" class="restore-notification">
-  <span id="restoreMessage"></span>
-  <button onclick="document.getElementById('restoreNotification').style.display='none';">&times;</button>
+<!-- ===== SECTION TABS ===== -->
+<div class="section-tabs" id="sectionTabs">
+  <div class="section-tab active" onclick="goToSection(0)">
+    <span class="lang-es">1. Parametros</span>
+    <span class="lang-en">1. Parameters</span>
+  </div>
+  <div class="section-tab" onclick="goToSection(1)">
+    <span class="lang-es">2. Parcelas</span>
+    <span class="lang-en">2. Parcels</span>
+  </div>
+  <div class="section-tab" onclick="goToSection(2)">
+    <span class="lang-es">3. Confianza Baja</span>
+    <span class="lang-en">3. Low Confidence</span>
+  </div>
+  <div class="section-tab" onclick="goToSection(3)">
+    <span class="lang-es">4. Preguntas Abiertas</span>
+    <span class="lang-en">4. Open Questions</span>
+  </div>
+  <div class="section-tab" onclick="goToSection(4)">
+    <span class="lang-es">5. Revisar y Enviar</span>
+    <span class="lang-en">5. Review & Submit</span>
+  </div>
 </div>
 
 <!-- ===== RESPONDENT INFO ===== -->
@@ -566,54 +545,376 @@ textarea { min-height: 100px; resize: vertical; }
       <span class="lang-es">Nombre / </span>
       <span class="lang-en">Name</span>
     </label>
-    <input type="text" id="respondent-name" placeholder="Su nombre / Your name" style="width:100%; max-width:400px;" oninput="autoSave();">
+    <input type="text" id="respondent-name" placeholder="Su nombre / Your name" style="width:100%; max-width:400px;">
   </div>
   <div>
     <label style="font-weight:600; display:block; margin-bottom:4px;">
       <span class="lang-es">Email / </span>
       <span class="lang-en">Email</span>
     </label>
-    <input type="email" id="respondent-email" placeholder="correo@ejemplo.com" style="width:100%; max-width:400px;" oninput="autoSave();">
-  </div>
-</div>
-
-<!-- ===== LANGUAGE BANNER ===== -->
-<div class="lang-banner">
-  <div class="lang-banner-text">Seleccione idioma / Select language:</div>
-  <div class="lang-toggle">
-    <button class="active" data-lang="es" onclick="setLang('es')">Espanol</button>
-    <button data-lang="en" onclick="setLang('en')">English</button>
-    <button data-lang="both" onclick="setLang('both')">Ambos / Both</button>
-  </div>
-</div>
-
-<!-- ===== SECTION TABS ===== -->
-<div class="section-tabs" id="sectionTabs">
-  <div class="section-tab active" onclick="goToSection(0)">
-    <span class="lang-es">1. Parcelas</span>
-    <span class="lang-en">1. Parcels</span>
-  </div>
-  <div class="section-tab" onclick="goToSection(1)">
-    <span class="lang-es">2. Confianza Baja</span>
-    <span class="lang-en">2. Low Confidence</span>
-  </div>
-  <div class="section-tab" onclick="goToSection(2)">
-    <span class="lang-es">3. Revisar y Enviar</span>
-    <span class="lang-en">3. Review & Submit</span>
+    <input type="email" id="respondent-email" placeholder="correo@ejemplo.com" style="width:100%; max-width:400px;">
   </div>
 </div>
 
 <!-- ================================================================ -->
-<!-- ===== SECTION 1: PARCELS (15 MEDIUM EXAMPLES) ===== -->
+<!-- ===== PART 1: GENERAL PARAMETERS ===== -->
 <!-- ================================================================ -->
 <div class="section active" id="section0">
 
 <h2 class="section-title">
-  <div class="lang-es">Seccion 1: Validacion de Parcelas (15 ejemplos MEDIUM)</div>
-  <div class="lang-en">Section 1: Parcel Validation (15 MEDIUM examples)</div>
+  <div class="lang-es">Parte 1: Parametros Generales</div>
+  <div class="lang-en">Part 1: General Parameters</div>
 </h2>
 
-<div class="card-nav">
+<!-- Q1: Apartment Sizes -->
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">Q1. Superficie de viviendas</div>
+  <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:12px;">Q1. Apartment Sizes</div>
+
+  <div class="lang-es">Cuales son los rangos tipicos de superficie util (min-max) para cada tipologia?</div>
+  <div class="lang-en">What are the typical usable area ranges (min-max) for each typology?</div>
+
+  <div class="algo-hint">
+    <span class="lang-es">Valores actuales del algoritmo:</span>
+    <span class="lang-en">Current algorithm values:</span>
+    T1: 40-55 m2, T2: 55-80 m2, T3: 75-110 m2
+  </div>
+
+  <!-- T1 -->
+  <div style="margin-top:16px;">
+    <strong>T1 (1 dormitorio / 1 bedroom)</strong>
+    <div class="range-pair">
+      <div>
+        <label><span class="lang-es">Minimo (m2)</span><span class="lang-en">Minimum (m2)</span></label>
+        <div class="slider-container">
+          <input type="range" id="q1_t1_min" min="25" max="60" step="1" value="40" oninput="updateSliderVal(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="slider-labels"><span>25</span></span>
+            <span class="slider-value" id="q1_t1_min_val">40 m2</span>
+            <span class="slider-labels"><span>60</span></span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label><span class="lang-es">Maximo (m2)</span><span class="lang-en">Maximum (m2)</span></label>
+        <div class="slider-container">
+          <input type="range" id="q1_t1_max" min="40" max="80" step="1" value="55" oninput="updateSliderVal(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="slider-labels"><span>40</span></span>
+            <span class="slider-value" id="q1_t1_max_val">55 m2</span>
+            <span class="slider-labels"><span>80</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- T2 -->
+  <div style="margin-top:12px;">
+    <strong>T2 (2 dormitorios / 2 bedrooms)</strong>
+    <div class="range-pair">
+      <div>
+        <label><span class="lang-es">Minimo (m2)</span><span class="lang-en">Minimum (m2)</span></label>
+        <div class="slider-container">
+          <input type="range" id="q1_t2_min" min="40" max="75" step="1" value="55" oninput="updateSliderVal(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="slider-labels"><span>40</span></span>
+            <span class="slider-value" id="q1_t2_min_val">55 m2</span>
+            <span class="slider-labels"><span>75</span></span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label><span class="lang-es">Maximo (m2)</span><span class="lang-en">Maximum (m2)</span></label>
+        <div class="slider-container">
+          <input type="range" id="q1_t2_max" min="60" max="120" step="1" value="80" oninput="updateSliderVal(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="slider-labels"><span>60</span></span>
+            <span class="slider-value" id="q1_t2_max_val">80 m2</span>
+            <span class="slider-labels"><span>120</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- T3 -->
+  <div style="margin-top:12px;">
+    <strong>T3 (3+ dormitorios / 3+ bedrooms)</strong>
+    <div class="range-pair">
+      <div>
+        <label><span class="lang-es">Minimo (m2)</span><span class="lang-en">Minimum (m2)</span></label>
+        <div class="slider-container">
+          <input type="range" id="q1_t3_min" min="60" max="100" step="1" value="75" oninput="updateSliderVal(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="slider-labels"><span>60</span></span>
+            <span class="slider-value" id="q1_t3_min_val">75 m2</span>
+            <span class="slider-labels"><span>100</span></span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label><span class="lang-es">Maximo (m2)</span><span class="lang-en">Maximum (m2)</span></label>
+        <div class="slider-container">
+          <input type="range" id="q1_t3_max" min="80" max="160" step="1" value="110" oninput="updateSliderVal(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="slider-labels"><span>80</span></span>
+            <span class="slider-value" id="q1_t3_max_val">110 m2</span>
+            <span class="slider-labels"><span>160</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q2: Apartment Mix -->
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">Q2. Distribucion de tipologias</div>
+  <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:12px;">Q2. Apartment Mix</div>
+
+  <div class="algo-hint">
+    <span class="lang-es"><strong>Estrategia actual del algoritmo:</strong> para cada parcela, primero llenamos toda la superficie con T1 (viviendas pequenas, ~40 m2), porque tienen el mayor precio por m2 en Barcelona. Despues, convertimos ~30% a T2 y ~10% a T3 para cumplir la mezcla de tipologias. <br><br><strong>Ejemplo:</strong> una parcela de 1.200 m2 con edificabilidad 1,5 genera 1.800 m2 de SBA residencial. El algoritmo primero calcula 45 viviendas T1 (a 40 m2), luego convierte 14 a T2 (55 m2) y 4 a T3 (75 m2), quedando: <strong>27 T1 + 14 T2 + 4 T3 = 45 viviendas</strong>. El resultado final es ~60% T1, ~31% T2, ~9% T3.</span>
+    <span class="lang-en"><strong>Current algorithm strategy:</strong> for each parcel, we first fill the entire area with T1 (small apartments, ~40 m2), as they have the highest price per m2 in Barcelona. Then we convert ~30% to T2 and ~10% to T3 to meet the typology mix. <br><br><strong>Example:</strong> a 1,200 m2 parcel with FAR 1.5 yields 1,800 m2 of residential GFA. The algorithm first calculates 45 T1 units (at 40 m2), then converts 14 to T2 (55 m2) and 4 to T3 (75 m2), resulting in: <strong>27 T1 + 14 T2 + 4 T3 = 45 apartments</strong>. The final mix is ~60% T1, ~31% T2, ~9% T3.</span>
+  </div>
+
+  <div class="lang-es">Esta de acuerdo con esta estrategia de maximizar T1?</div>
+  <div class="lang-en">Do you agree with this T1 maximization strategy?</div>
+
+  <div class="radio-group">
+    <label class="radio-option">
+      <input type="radio" name="q2_agree" value="agree" onchange="toggleConditional('q2_disagree_detail', false)">
+      <div class="option-text">
+        <div class="lang-es">Si, es una buena estrategia por defecto</div>
+        <div class="lang-en">Yes, it is a good default strategy</div>
+      </div>
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="q2_agree" value="disagree" onchange="toggleConditional('q2_disagree_detail', true)">
+      <div class="option-text">
+        <div class="lang-es">No, propondria otra distribucion</div>
+        <div class="lang-en">No, I would propose a different distribution</div>
+      </div>
+    </label>
+  </div>
+
+  <div id="q2_disagree_detail" class="conditional">
+    <div class="lang-es" style="font-size:14px; margin-bottom:8px;">Indique los porcentajes que propondria:</div>
+    <div class="lang-en" style="font-size:12px; color:#888; margin-bottom:8px;">Indicate the percentages you would propose:</div>
+    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+      <div style="flex:1; min-width:80px;">
+        <label style="font-size:13px; font-weight:600;">T1 %</label>
+        <input type="number" id="q2_t1_pct" min="0" max="100" value="50" style="width:100%;">
+      </div>
+      <div style="flex:1; min-width:80px;">
+        <label style="font-size:13px; font-weight:600;">T2 %</label>
+        <input type="number" id="q2_t2_pct" min="0" max="100" value="35" style="width:100%;">
+      </div>
+      <div style="flex:1; min-width:80px;">
+        <label style="font-size:13px; font-weight:600;">T3 %</label>
+        <input type="number" id="q2_t3_pct" min="0" max="100" value="15" style="width:100%;">
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <div class="lang-es">De que factores depende la distribucion? (ubicacion, normativa, mercado...)</div>
+    <div class="lang-en">What factors does the distribution depend on? (location, regulations, market...)</div>
+    <textarea id="q2_factors" placeholder="..."></textarea>
+  </div>
+</div>
+
+<!-- Q3: Common Areas -->
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">Q3. Zonas comunes</div>
+  <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:12px;">Q3. Common Areas</div>
+
+  <div class="algo-hint">
+    <span class="lang-es">Nuestro algoritmo usa 15% para plurifamiliar, 10% para adosado.</span>
+    <span class="lang-en">Our algorithm uses 15% for multi-family, 10% for townhouse.</span>
+  </div>
+
+  <div class="lang-es">Que porcentaje de zonas comunes (escaleras, pasillos, vestibulo) es tipico en plurifamiliar?</div>
+  <div class="lang-en">What percentage of common areas (stairs, corridors, lobby) is typical in multi-family?</div>
+
+  <div class="slider-container">
+    <input type="range" id="q3_common" min="10" max="25" step="1" value="15" oninput="updateSliderVal(this)">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="slider-labels"><span>10%</span></span>
+      <span class="slider-value" id="q3_common_val">15%</span>
+      <span class="slider-labels"><span>25%</span></span>
+    </div>
+    <div class="algo-default-marker">
+      <span class="lang-es">Valor actual del algoritmo: 15%</span>
+      <span class="lang-en">Current algorithm default: 15%</span>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <div class="lang-es">En que casos varia este porcentaje?</div>
+    <div class="lang-en">In which cases does this percentage vary?</div>
+    <textarea id="q3_varies" placeholder="..."></textarea>
+  </div>
+</div>
+
+<!-- Q4: Commercial Ground Floor -->
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">Q4. Planta baja comercial</div>
+  <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:12px;">Q4. Commercial Ground Floor</div>
+
+  <div class="lang-es">Cuando es obligatoria la planta baja comercial?</div>
+  <div class="lang-en">When is a commercial ground floor mandatory?</div>
+
+  <div class="radio-group">
+    <label class="radio-option">
+      <input type="radio" name="q4_commercial" value="always" onchange="toggleConditional('q4_clau_detail', false)">
+      <div class="option-text">
+        <div class="lang-es">Siempre en edificacion plurifamiliar</div>
+        <div class="lang-en">Always in multi-family buildings</div>
+      </div>
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="q4_commercial" value="plan_requirement" onchange="toggleConditional('q4_clau_detail', true)">
+      <div class="option-text">
+        <div class="lang-es">Solo cuando el planeamiento lo exige</div>
+        <div class="lang-en">Only when required by the plan</div>
+      </div>
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="q4_commercial" value="never" onchange="toggleConditional('q4_clau_detail', false)">
+      <div class="option-text">
+        <div class="lang-es">Nunca es obligatoria (es decision del promotor)</div>
+        <div class="lang-en">Never mandatory (developer's decision)</div>
+      </div>
+    </label>
+  </div>
+
+  <div id="q4_clau_detail" class="conditional">
+    <div class="lang-es">En que CLAUs o zonas se exige?</div>
+    <div class="lang-en">In which CLAUs or zones is it required?</div>
+    <textarea id="q4_clau_text" placeholder="ej. CLAU 13a, 13b en calles de mas de 20m..."></textarea>
+  </div>
+
+  <div style="margin-top:20px; padding-top:16px; border-top:1px solid #f0f0f0;">
+    <div class="lang-es" style="font-weight:500;">Como calcular la superficie de aparcamiento subterraneo?</div>
+    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">How to calculate underground parking area?</div>
+
+    <div class="algo-hint">
+      <span class="lang-es">Valor actual: 1 plaza por vivienda, 25 m2 por plaza</span>
+      <span class="lang-en">Current value: 1 spot per apartment, 25 m2 per spot</span>
+    </div>
+
+    <textarea id="q4_parking" placeholder="..."></textarea>
+  </div>
+</div>
+
+<!-- Q5: Density Rule -->
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">Q5. Regla de densidad (Art. 323)</div>
+  <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:12px;">Q5. Density Rule (Art. 323)</div>
+
+  <div class="algo-hint">
+    <span class="lang-es">Art. 323 del PGM limita el numero de viviendas: superficie edificable / 80 m2</span>
+    <span class="lang-en">Art. 323 of the PGM limits the number of apartments: buildable area / 80 m2</span>
+  </div>
+
+  <div class="lang-es">Es correcta esta regla como la aplicamos?</div>
+  <div class="lang-en">Is this rule correct as we apply it?</div>
+
+  <div class="radio-group">
+    <label class="radio-option">
+      <input type="radio" name="q5_density" value="correct">
+      <div class="option-text">
+        <div class="lang-es">Si, es correcta</div>
+        <div class="lang-en">Yes, it is correct</div>
+      </div>
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="q5_density" value="different">
+      <div class="option-text">
+        <div class="lang-es">Deberia ser diferente</div>
+        <div class="lang-en">Should be different</div>
+      </div>
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="q5_density" value="not_always">
+      <div class="option-text">
+        <div class="lang-es">No siempre se aplica</div>
+        <div class="lang-en">Does not always apply</div>
+      </div>
+    </label>
+  </div>
+
+  <div style="margin-top:12px;">
+    <div class="lang-es">En que casos se exceptua esta regla?</div>
+    <div class="lang-en">In which cases is this rule excepted?</div>
+    <textarea id="q5_exceptions" placeholder="..."></textarea>
+  </div>
+</div>
+
+<!-- Q6: HPO Social Housing -->
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">Q6. Vivienda protegida (HPO)</div>
+  <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:12px;">Q6. Social Housing (HPO)</div>
+
+  <div class="algo-hint">
+    <span class="lang-es">Valor actual: 30% de las viviendas si la superficie edificable total >= 600 m2</span>
+    <span class="lang-en">Current value: 30% of apartments if total buildable area >= 600 m2</span>
+  </div>
+
+  <div class="lang-es">Es correcto este criterio?</div>
+  <div class="lang-en">Is this criterion correct?</div>
+
+  <div class="radio-group">
+    <label class="radio-option">
+      <input type="radio" name="q6_hpo" value="correct">
+      <div class="option-text">
+        <div class="lang-es">Si, es correcto</div>
+        <div class="lang-en">Yes, it is correct</div>
+      </div>
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="q6_hpo" value="different">
+      <div class="option-text">
+        <div class="lang-es">Deberia ser diferente</div>
+        <div class="lang-en">Should be different</div>
+      </div>
+    </label>
+  </div>
+
+  <div style="margin-top:12px;">
+    <div class="lang-es">Hay excepciones al umbral de 600 m2?</div>
+    <div class="lang-en">Are there exceptions to the 600 m2 threshold?</div>
+    <textarea id="q6_exceptions" placeholder="..."></textarea>
+  </div>
+</div>
+
+<div class="nav-footer">
+  <div></div>
+  <button class="btn btn-primary" onclick="goToSection(1)">
+    <span class="lang-es">Siguiente: Parcelas</span>
+    <span class="lang-en">Next: Parcels</span>
+    &rarr;
+  </button>
+</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- ===== PART 2: PARCEL EXAMPLES ===== -->
+<!-- ================================================================ -->
+<div class="section" id="section1">
+
+<h2 class="section-title">
+  <div class="lang-es">Parte 2: Ejemplos de Calculo (15 parcelas)</div>
+  <div class="lang-en">Part 2: Calculation Examples (15 parcels)</div>
+</h2>
+
+<p style="margin-bottom:20px; font-size:14px; color:#555;">
+  <span class="lang-es">Revise cada parcela y valide si nuestro calculo de capacidad es realista. Puede navegar entre parcelas con los botones de abajo.</span>
+  <span class="lang-en">Review each parcel and validate whether our capacity calculation is realistic. Navigate between parcels with the buttons below.</span>
+</p>
+
+<div class="card-nav" style="border-top:none; padding-top:0;">
   <button class="btn btn-secondary" id="prevParcelBtn" onclick="navigateParcel(-1)" disabled>&larr; <span class="lang-es">Anterior</span><span class="lang-en">Previous</span></button>
   <span class="card-counter" id="parcelCounter">Parcela 1 de 15</span>
   <button class="btn btn-primary" id="nextParcelBtn" onclick="navigateParcel(1)"><span class="lang-es">Siguiente</span><span class="lang-en">Next</span> &rarr;</button>
@@ -628,8 +929,10 @@ textarea { min-height: 100px; resize: vertical; }
 </div>
 
 <div class="nav-footer">
-  <div></div>
-  <button class="btn btn-primary" onclick="goToSection(1)">
+  <button class="btn btn-secondary" onclick="goToSection(0)">
+    &larr; <span class="lang-es">Parametros</span><span class="lang-en">Parameters</span>
+  </button>
+  <button class="btn btn-primary" onclick="goToSection(2)">
     <span class="lang-es">Siguiente: Confianza Baja</span>
     <span class="lang-en">Next: Low Confidence</span>
     &rarr;
@@ -638,13 +941,13 @@ textarea { min-height: 100px; resize: vertical; }
 </div>
 
 <!-- ================================================================ -->
-<!-- ===== SECTION 2: LOW CONFIDENCE STRATEGY ===== -->
+<!-- ===== PART 3: LOW CONFIDENCE ===== -->
 <!-- ================================================================ -->
-<div class="section" id="section1">
+<div class="section" id="section2">
 
 <h2 class="section-title">
-  <div class="lang-es">Seccion 2: Estrategia para parcelas sin datos</div>
-  <div class="lang-en">Section 2: Strategy for parcels without data</div>
+  <div class="lang-es">Parte 3: Estrategia para parcelas sin datos</div>
+  <div class="lang-en">Part 3: Strategy for parcels without data</div>
 </h2>
 
 <div class="warning-box">
@@ -662,42 +965,42 @@ textarea { min-height: 100px; resize: vertical; }
 
   <div class="checkbox-group">
     <label class="checkbox-option">
-      <input type="checkbox" name="s1_strategy" value="district_far" onchange="autoSave(); updateProgress();">
+      <input type="checkbox" name="s1_strategy" value="district_far">
       <div class="option-text">
         <div class="lang-es">Usar FAR medio del distrito</div>
         <div class="lang-en">Use average FAR of the district</div>
       </div>
     </label>
     <label class="checkbox-option">
-      <input type="checkbox" name="s1_strategy" value="neighbor_far" onchange="autoSave(); updateProgress();">
+      <input type="checkbox" name="s1_strategy" value="neighbor_far">
       <div class="option-text">
         <div class="lang-es">Usar FAR de parcelas vecinas con datos</div>
         <div class="lang-en">Use FAR from neighboring parcels with data</div>
       </div>
     </label>
     <label class="checkbox-option">
-      <input type="checkbox" name="s1_strategy" value="conservative" onchange="autoSave(); updateProgress();">
+      <input type="checkbox" name="s1_strategy" value="conservative">
       <div class="option-text">
         <div class="lang-es">Asumir FAR conservador (ej. 1.0)</div>
         <div class="lang-en">Assume conservative FAR (e.g. 1.0)</div>
       </div>
     </label>
     <label class="checkbox-option">
-      <input type="checkbox" name="s1_strategy" value="manual_lookup" onchange="autoSave(); updateProgress();">
+      <input type="checkbox" name="s1_strategy" value="manual_lookup">
       <div class="option-text">
         <div class="lang-es">Consultar planes uno por uno (no escalable)</div>
         <div class="lang-en">Look up plans one by one (not scalable)</div>
       </div>
     </label>
     <label class="checkbox-option">
-      <input type="checkbox" name="s1_strategy" value="wms_sostre" onchange="autoSave(); updateProgress();">
+      <input type="checkbox" name="s1_strategy" value="wms_sostre">
       <div class="option-text">
         <div class="lang-es">Usar datos de sostre maximo del WMS donde disponible</div>
         <div class="lang-en">Use maximum floor area data from WMS where available</div>
       </div>
     </label>
     <label class="checkbox-option">
-      <input type="checkbox" name="s1_strategy" value="other" onchange="autoSave(); updateProgress();">
+      <input type="checkbox" name="s1_strategy" value="other">
       <div class="option-text">
         <div class="lang-es">Otro</div>
         <div class="lang-en">Other</div>
@@ -705,7 +1008,7 @@ textarea { min-height: 100px; resize: vertical; }
     </label>
   </div>
   <div style="margin-top:8px;">
-    <input type="text" id="s1_other_text" placeholder="Especificar otro / Specify other..." oninput="autoSave();">
+    <input type="text" id="s1_other_text" placeholder="Especificar otro / Specify other...">
   </div>
 </div>
 
@@ -722,7 +1025,7 @@ textarea { min-height: 100px; resize: vertical; }
     <span class="lang-en">Current value: 1.5</span>
   </div>
 
-  <input type="number" id="s2_default_far" min="0.5" max="5.0" step="0.1" value="1.5" style="max-width:200px;" oninput="autoSave(); updateProgress();">
+  <input type="number" id="s2_default_far" min="0.5" max="5.0" step="0.1" value="1.5" style="max-width:200px;">
 </div>
 
 <!-- S3 -->
@@ -733,7 +1036,7 @@ textarea { min-height: 100px; resize: vertical; }
   <div class="lang-es">Conoce alguna fuente de datos estructurada con parametros de edificacion por parcela que no hayamos considerado?</div>
   <div class="lang-en">Do you know of any structured data source with building parameters per parcel that we haven't considered?</div>
 
-  <textarea id="s3_sources" placeholder="..." oninput="autoSave(); updateProgress();"></textarea>
+  <textarea id="s3_sources" placeholder="..."></textarea>
 </div>
 
 <!-- S4 -->
@@ -744,14 +1047,70 @@ textarea { min-height: 100px; resize: vertical; }
   <div class="lang-es">Tiene acceso a algun sistema profesional donde se puedan consultar estos parametros en lote?</div>
   <div class="lang-en">Do you have access to any professional system where these parameters can be queried in bulk?</div>
 
-  <textarea id="s4_systems" placeholder="..." oninput="autoSave(); updateProgress();"></textarea>
+  <textarea id="s4_systems" placeholder="..."></textarea>
 </div>
 
 <div class="nav-footer">
-  <button class="btn btn-secondary" onclick="goToSection(0)">
+  <button class="btn btn-secondary" onclick="goToSection(1)">
     &larr; <span class="lang-es">Parcelas</span><span class="lang-en">Parcels</span>
   </button>
-  <button class="btn btn-primary" onclick="goToSection(2)">
+  <button class="btn btn-primary" onclick="goToSection(3)">
+    <span class="lang-es">Siguiente: Preguntas Abiertas</span>
+    <span class="lang-en">Next: Open Questions</span>
+    &rarr;
+  </button>
+</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- ===== PART 4: OPEN QUESTIONS ===== -->
+<!-- ================================================================ -->
+<div class="section" id="section3">
+
+<h2 class="section-title">
+  <div class="lang-es">Parte 4: Preguntas Abiertas</div>
+  <div class="lang-en">Part 4: Open Questions</div>
+</h2>
+
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">O1.</div>
+  <div class="lang-es">En que tipo de parcelas tiende nuestro algoritmo a sobreestimar?</div>
+  <div class="lang-en">In what types of parcels does our algorithm tend to overestimate?</div>
+  <textarea id="o1_overestimate" placeholder="..."></textarea>
+</div>
+
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">O2.</div>
+  <div class="lang-es">Que normativas o restricciones importantes no estamos considerando? Ademas, de las 1.546 parcelas de nuestro analisis, hay zonas CLAU donde la construccion residencial es de facto imposible (barreras administrativas, servidumbres, restricciones ambientales, necesidad de PMU, etc.)? Indique cuales y por que.</div>
+  <div class="lang-en">What important regulations or restrictions are we not considering? Also, among the 1,546 parcels in our analysis, are there CLAU zones where residential construction is de facto impossible (administrative barriers, easements, environmental restrictions, need for PMU, etc.)? Please indicate which ones and why.</div>
+  <textarea id="o2_regulations" placeholder="..."></textarea>
+</div>
+
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">O3.</div>
+  <div class="lang-es">Que distritos considera mas prometedores para vivienda nueva?</div>
+  <div class="lang-en">Which districts do you consider most promising for new housing?</div>
+  <textarea id="o5_promising_districts" placeholder="..."></textarea>
+</div>
+
+<div class="question-block">
+  <div class="lang-es" style="font-size:17px; font-weight:600; margin-bottom:4px;">O4.</div>
+  <div class="lang-es">Anos de experiencia en urbanismo en Barcelona</div>
+  <div class="lang-en">Years of experience in urbanism in Barcelona</div>
+  <select id="o6_experience">
+    <option value="">-- <span class="lang-es">Seleccione</span> --</option>
+    <option value="<5">&lt; 5 anos / years</option>
+    <option value="5-10">5 - 10 anos / years</option>
+    <option value="10-20">10 - 20 anos / years</option>
+    <option value="20+">20+ anos / years</option>
+  </select>
+</div>
+
+<div class="nav-footer">
+  <button class="btn btn-secondary" onclick="goToSection(2)">
+    &larr; <span class="lang-es">Confianza Baja</span><span class="lang-en">Low Confidence</span>
+  </button>
+  <button class="btn btn-primary" onclick="goToSection(4)">
     <span class="lang-es">Siguiente: Revisar y Enviar</span>
     <span class="lang-en">Next: Review & Submit</span>
     &rarr;
@@ -760,23 +1119,27 @@ textarea { min-height: 100px; resize: vertical; }
 </div>
 
 <!-- ================================================================ -->
-<!-- ===== SECTION 3: REVIEW & SUBMIT ===== -->
+<!-- ===== PART 5: REVIEW & SUBMIT ===== -->
 <!-- ================================================================ -->
-<div class="section" id="section2">
+<div class="section" id="section4">
 
 <h2 class="section-title">
-  <div class="lang-es">Seccion 3: Revisar y Enviar</div>
-  <div class="lang-en">Section 3: Review & Submit</div>
+  <div class="lang-es">Parte 5: Revisar y Enviar</div>
+  <div class="lang-en">Part 5: Review & Submit</div>
 </h2>
 
 <p style="margin-bottom:16px; font-size:14px; color:#555;">
-  <span class="lang-es">Revise sus respuestas antes de enviar.</span>
-  <span class="lang-en">Review your answers before submitting.</span>
+  <span class="lang-es">Revise sus respuestas antes de enviar. Puede descargar el JSON o enviar directamente a Google Sheets.</span>
+  <span class="lang-en">Review your answers before submitting. You can download the JSON or submit directly to Google Sheets.</span>
 </p>
 
 <div id="reviewSummary"></div>
 
 <div class="btn-group" style="margin-top:24px;">
+  <button class="btn btn-secondary" onclick="downloadJSON()">
+    <span class="lang-es">Descargar JSON</span>
+    <span class="lang-en">Download JSON</span>
+  </button>
   <button class="btn btn-success" onclick="submitToSheets()" id="submitBtn">
     <span class="lang-es">Enviar a Google Sheets</span>
     <span class="lang-en">Submit to Google Sheets</span>
@@ -786,23 +1149,14 @@ textarea { min-height: 100px; resize: vertical; }
 <div id="submitStatus" style="margin-top:16px;"></div>
 
 <div class="nav-footer">
-  <button class="btn btn-secondary" onclick="goToSection(1)">
-    &larr; <span class="lang-es">Confianza Baja</span><span class="lang-en">Low Confidence</span>
+  <button class="btn btn-secondary" onclick="goToSection(3)">
+    &larr; <span class="lang-es">Preguntas Abiertas</span><span class="lang-en">Open Questions</span>
   </button>
   <div></div>
 </div>
 </div>
 
 </div><!-- end container -->
-
-<!-- ===== FLOATING SUBMIT BUTTON ===== -->
-<div class="floating-submit">
-  <button class="btn btn-success" onclick="submitToSheets()" id="floatingSubmitBtn">
-    <span class="lang-es">Enviar respuestas</span>
-    <span class="lang-en">Submit answers</span>
-  </button>
-  <span class="submit-status" id="floatingSubmitStatus"></span>
-</div>
 
 <script>
 // ===== PARCEL DATA =====
@@ -814,7 +1168,7 @@ const PARCELS = [
     district: "Sant Andreu",
     barri: "??",
     clau: "18",
-    clau_name: "Zona subjecte a ordenaci\u00f3 volum\u00e8trica espec\u00edfica",
+    clau_name: "Zona subjecte a ordenació volumètrica específica",
     plan_code: "B0772",
     area: 7879.0,
     far: 4.8,
@@ -838,7 +1192,7 @@ const PARCELS = [
     parking_levels: 2,
     sostre_max: 80000.0,
     street_width: null,
-    wms_alcades: "150m.\nCota de refer\u00e8ncia de l'al\u00e7ada m\u00e0xima: +25,50m.",
+    wms_alcades: "150m.\nCota de referència de l'alçada màxima: +25,50m.",
     wms_edific: null,
     lat: 41.43011339666919,
     lng: 2.197350607830087
@@ -848,9 +1202,9 @@ const PARCELS = [
     ref: "1700409DF3910B",
     address: null,
     district: "Nou Barris",
-    barri: "Torre Bar\u00f3",
+    barri: "Torre Baró",
     clau: "16A",
-    clau_name: "Zona en s\u00f2l urb\u00e0 d'actuaci\u00f3 p\u00fablica",
+    clau_name: "Zona en sòl urbà d'actuació pública",
     plan_code: "B0910",
     area: 436.0,
     far: 1.0,
@@ -883,7 +1237,7 @@ const PARCELS = [
     n: 3,
     ref: "2246201DF3824E",
     address: null,
-    district: "Sant Mart\u00ed",
+    district: "Sant Martí",
     barri: "el Clot",
     clau: "12c-hp",
     clau_name: "Zona de nucli antic. El Camp de l'Arpa i El Clot. Habitatge protegit.",
@@ -910,7 +1264,7 @@ const PARCELS = [
     parking_levels: 1,
     sostre_max: null,
     street_width: 49.6,
-    wms_alcades: "Seran les que s'estableixen en els pl\u00e0nols d'ordenaci\u00f3 de la s\u00e8rie 4. Ordenaci\u00f3 detallada de l'edificaci\u00f3.\n\nVeure l'article 32 de la normativa adjunta.",
+    wms_alcades: "Seran les que s'estableixen en els plànols d'ordenació de la sèrie 4. Ordenació detallada de l'edificació.\n\nVeure l'article 32 de la normativa adjunta.",
     wms_edific: null,
     lat: 41.40853851100829,
     lng: 2.187531047217913
@@ -919,10 +1273,10 @@ const PARCELS = [
     n: 4,
     ref: "9668253DF2896H",
     address: null,
-    district: "Horta-Guinard\u00f3",
+    district: "Horta-Guinardó",
     barri: "el Carmel",
     clau: "13b-hs",
-    clau_name: "Zona en densificaci\u00f3 urbana semiintensiva, sotmesa a algun r\u00e8gim de protecci\u00f3 p\u00fablica",
+    clau_name: "Zona en densificació urbana semiintensiva, sotmesa a algun règim de protecció pública",
     plan_code: "B070191",
     area: 2889.0,
     far: 1.5,
@@ -956,9 +1310,9 @@ const PARCELS = [
     ref: "1446925DF3814E",
     address: null,
     district: "Eixample",
-    barri: "la Sagrada Fam\u00edlia",
+    barri: "la Sagrada Família",
     clau: "13E",
-    clau_name: "Subzona de la zona de densificaci\u00f3 urbana Eixample",
+    clau_name: "Subzona de la zona de densificació urbana Eixample",
     plan_code: "BE202",
     area: 2607.0,
     far: 2.0,
@@ -991,10 +1345,10 @@ const PARCELS = [
     n: 6,
     ref: "8589952DF2788H",
     address: null,
-    district: "Sants-Montju\u00efc",
+    district: "Sants-Montjuïc",
     barri: "la Marina de Port",
     clau: "13a",
-    clau_name: "Zona en densificaci\u00f3 urbana intensiva",
+    clau_name: "Zona en densificació urbana intensiva",
     plan_code: "B0829",
     area: 1417.0,
     far: 2.2,
@@ -1018,7 +1372,7 @@ const PARCELS = [
     parking_levels: 1,
     sostre_max: 5400.0,
     street_width: 16.0,
-    wms_alcades: "Veure pl\u00e0nol ordenaci\u00f3 05.",
+    wms_alcades: "Veure plànol ordenació 05.",
     wms_edific: null,
     lat: 41.35667984573395,
     lng: 2.145117000825145
@@ -1027,10 +1381,10 @@ const PARCELS = [
     n: 7,
     ref: "6939703DF2863H",
     address: null,
-    district: "Sarri\u00e0-Sant Gervasi",
+    district: "Sarrià-Sant Gervasi",
     barri: "les Tres Torres",
     clau: "20a/8",
-    clau_name: "Edificaci\u00f3 a\u00efllada, subzona plurifamiliar V",
+    clau_name: "Edificació aïllada, subzona plurifamiliar V",
     plan_code: "PGM",
     area: 1275.0,
     far: 1.0,
@@ -1054,7 +1408,7 @@ const PARCELS = [
     parking_levels: 1,
     sostre_max: null,
     street_width: null,
-    wms_alcades: "En funci\u00f3 de l'ample de vial (art. 342.5 modif.) (9):\nDe menys de 8m: 7,55 m (B+1)\nDe 8 a menys d'11 m: 10,60 m (B+2)\nD'11 a menys de 15 m: 13,65 m (B+3)\nDe 15 m o m\u00e9s: 16,70 m (B+4)",
+    wms_alcades: "En funció de l'ample de vial (art. 342.5 modif.) (9):\nDe menys de 8m: 7,55 m (B+1)\nDe 8 a menys d'11 m: 10,60 m (B+2)\nD'11 a menys de 15 m: 13,65 m (B+3)\nDe 15 m o més: 16,70 m (B+4)",
     wms_edific: null,
     lat: 41.40170754008235,
     lng: 2.125713519730865
@@ -1066,7 +1420,7 @@ const PARCELS = [
     district: "Ciutat Vella",
     barri: "la Barceloneta",
     clau: "14a",
-    clau_name: "Zona de remodelaci\u00f3 f\u00edsica p\u00fablica",
+    clau_name: "Zona de remodelació física pública",
     plan_code: "B1362",
     area: 1173.0,
     far: 1.2,
@@ -1100,9 +1454,9 @@ const PARCELS = [
     ref: "2850601DF3825B",
     address: null,
     district: "Unknown",
-    barri: "Sant Mart\u00ed de Proven\u00e7als",
+    barri: "Sant Martí de Provençals",
     clau: "15(p)",
-    clau_name: "Conservaci\u00f3 de l'estructura urbana i edificat\u00f2ria protegida",
+    clau_name: "Conservació de l'estructura urbana i edificatòria protegida",
     plan_code: "B000117P",
     area: 906.0,
     far: 0.88,
@@ -1135,8 +1489,8 @@ const PARCELS = [
     n: 10,
     ref: "31458E1DF3834E",
     address: null,
-    district: "Sant Mart\u00ed",
-    barri: "Proven\u00e7als del Poblenou",
+    district: "Sant Martí",
+    barri: "Provençals del Poblenou",
     clau: "22@T",
     clau_name: "Subzona d'activitats 22@ transformat",
     plan_code: "22@0060",
@@ -1162,7 +1516,7 @@ const PARCELS = [
     parking_levels: 1,
     sostre_max: null,
     street_width: null,
-    wms_alcades: "Vegis pl\u00e0nol 7a.",
+    wms_alcades: "Vegis plànol 7a.",
     wms_edific: null,
     lat: 41.40753077799381,
     lng: 2.197958947879445
@@ -1174,7 +1528,7 @@ const PARCELS = [
     district: "Les Corts",
     barri: "Pedralbes",
     clau: "18",
-    clau_name: "Zona subjecte a ordenaci\u00f3 volum\u00e8trica espec\u00edfica",
+    clau_name: "Zona subjecte a ordenació volumètrica específica",
     plan_code: "SR112",
     area: 5154.0,
     far: 7.2,
@@ -1207,10 +1561,10 @@ const PARCELS = [
     n: 12,
     ref: "9449701DF2894G",
     address: null,
-    district: "Gr\u00e0cia",
+    district: "Gràcia",
     barri: "la Salut",
     clau: "12g",
-    clau_name: "Zona de nucli de la Vila de Gr\u00e0cia",
+    clau_name: "Zona de nucli de la Vila de Gràcia",
     plan_code: "B1657",
     area: 724.0,
     far: 1.8,
@@ -1234,7 +1588,7 @@ const PARCELS = [
     parking_levels: 1,
     sostre_max: null,
     street_width: 10.0,
-    wms_alcades: "Seran les que s'estableixen al pl\u00e0nol d'ordenaci\u00f3 4. Ordenaci\u00f3 detallada de\nl'edificaci\u00f3.\n\nVeure l'article 30 de la normativa adjunta.",
+    wms_alcades: "Seran les que s'estableixen al plànol d'ordenació 4. Ordenació detallada de\nl'edificació.\n\nVeure l'article 30 de la normativa adjunta.",
     wms_edific: null,
     lat: 41.41128952003712,
     lng: 2.153833595801072
@@ -1246,7 +1600,7 @@ const PARCELS = [
     district: "Nou Barris",
     barri: "la Trinitat Nova",
     clau: "18",
-    clau_name: "Zona subjecte a ordenaci\u00f3 volum\u00e8trica espec\u00edfica",
+    clau_name: "Zona subjecte a ordenació volumètrica específica",
     plan_code: "B080469",
     area: 9536.0,
     far: 2.2,
@@ -1279,10 +1633,10 @@ const PARCELS = [
     n: 14,
     ref: "8485101DF2788E",
     address: "PS ZONA FRANCA 45 N2-51 Suelo 08038 BARCELONA (BARCELONA)",
-    district: "Sants-Montju\u00efc",
+    district: "Sants-Montjuïc",
     barri: "la Marina del Prat Vermell",
     clau: "18hp/18",
-    clau_name: "Zona subjecta a ordenaci\u00f3 volum\u00e8trica espec\u00edfica d'habitatge protegit i habitatge lliure",
+    clau_name: "Zona subjecta a ordenació volumètrica específica d'habitatge protegit i habitatge lliure",
     plan_code: "M06",
     area: 8129.0,
     far: 4.2,
@@ -1306,7 +1660,7 @@ const PARCELS = [
     parking_levels: 0,
     sostre_max: null,
     street_width: null,
-    wms_alcades: "L'altura m\u00e0xima o el nombre m\u00e0xim de plantes per a cadascun dels volums previstos es defineixen en els pl\u00e0nols O.06 i O.07\n\nPer sobre de l'altura m\u00e0xima resultant s'admeten els elements contemplats a l'article 223.2.f) de les NU del PGM, aix\u00ed com l",
+    wms_alcades: "L'altura màxima o el nombre màxim de plantes per a cadascun dels volums previstos es defineixen en els plànols O.06 i O.07\n\nPer sobre de l'altura màxima resultant s'admeten els elements contemplats a l'article 223.2.f) de les NU del PGM, així com l",
     wms_edific: null,
     lat: 41.35333749106695,
     lng: 2.142875073860577
@@ -1318,7 +1672,7 @@ const PARCELS = [
     district: "Nou Barris",
     barri: "Canyelles",
     clau: "18",
-    clau_name: "Zona subjecte a ordenaci\u00f3 volum\u00e8trica espec\u00edfica",
+    clau_name: "Zona subjecte a ordenació volumètrica específica",
     plan_code: "SA324",
     area: 7925.0,
     far: 1.39,
@@ -1355,79 +1709,23 @@ let currentParcel = 0;
 let parcelMaps = {};
 let parcelAnswers = {};
 
-// ===== LOCAL STORAGE =====
-const STORAGE_KEY = 'barcelona_survey_part2_v3';
-
-function autoSave() {
-  const s1checks = Array.from(document.querySelectorAll('input[name="s1_strategy"]:checked')).map(c => c.value);
-  const data = {
-    respondent_name: document.getElementById('respondent-name').value,
-    respondent_email: document.getElementById('respondent-email').value,
-    parcelAnswers: parcelAnswers,
-    s1_strategies: s1checks,
-    s1_other: document.getElementById('s1_other_text').value,
-    s2_default_far: document.getElementById('s2_default_far').value,
-    s3_sources: document.getElementById('s3_sources').value,
-    s4_systems: document.getElementById('s4_systems').value,
-    savedAt: new Date().toISOString()
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-function autoRestore() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return;
-  try {
-    const data = JSON.parse(raw);
-
-    if (data.respondent_name) document.getElementById('respondent-name').value = data.respondent_name;
-    if (data.respondent_email) document.getElementById('respondent-email').value = data.respondent_email;
-
-    if (data.parcelAnswers) parcelAnswers = data.parcelAnswers;
-
-    // Restore S1 checkboxes
-    if (data.s1_strategies && data.s1_strategies.length > 0) {
-      document.querySelectorAll('input[name="s1_strategy"]').forEach(cb => {
-        cb.checked = data.s1_strategies.includes(cb.value);
-      });
-    }
-    if (data.s1_other) document.getElementById('s1_other_text').value = data.s1_other;
-    if (data.s2_default_far) document.getElementById('s2_default_far').value = data.s2_default_far;
-    if (data.s3_sources) document.getElementById('s3_sources').value = data.s3_sources;
-    if (data.s4_systems) document.getElementById('s4_systems').value = data.s4_systems;
-
-    // Show notification
-    if (data.savedAt) {
-      const d = new Date(data.savedAt);
-      const dateStr = d.toLocaleDateString('es-ES') + ' ' + d.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
-      const notif = document.getElementById('restoreNotification');
-      document.getElementById('restoreMessage').innerHTML =
-        '<span class="lang-es">Datos restaurados del ' + dateStr + '.</span> ' +
-        '<span class="lang-en">Data restored from ' + dateStr + '.</span>';
-      notif.style.display = 'flex';
-    }
-  } catch(e) {
-    console.error('Error restoring saved data:', e);
-  }
-}
-
 // ===== LANGUAGE =====
 function setLang(mode) {
   document.body.classList.remove('hide-en', 'en-primary');
+  document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.remove('active'));
   if (mode === 'es') {
     document.body.classList.add('hide-en');
+    document.querySelectorAll('.lang-toggle button')[0].classList.add('active');
   } else if (mode === 'en') {
     document.body.classList.add('en-primary');
+    document.querySelectorAll('.lang-toggle button')[1].classList.add('active');
+  } else {
+    document.querySelectorAll('.lang-toggle button')[2].classList.add('active');
   }
-  document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.lang-toggle button[data-lang="' + mode + '"]').forEach(b => b.classList.add('active'));
 }
 
 // ===== NAVIGATION =====
 function goToSection(idx) {
-  if (currentSection === 0) {
-    saveCurrentParcelAnswers();
-  }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section' + idx).classList.add('active');
   document.querySelectorAll('.section-tab').forEach((t, i) => {
@@ -1438,10 +1736,10 @@ function goToSection(idx) {
   updateProgress();
   window.scrollTo(0, 0);
 
-  if (idx === 0) {
+  if (idx === 1) {
     renderCurrentParcel();
   }
-  if (idx === 2) {
+  if (idx === 4) {
     renderReview();
   }
 }
@@ -1469,24 +1767,72 @@ function updateParcelNav() {
 
 // ===== PROGRESS =====
 function updateProgress() {
-  let total = 19, answered = 0;
+  // Count answered questions
+  let total = 0, answered = 0;
 
-  // Parcels: 15 items (count if p1 answered)
+  // Part 1: 6 questions
+  total += 6;
+  if (document.getElementById('q1_t1_min').value != 40 || document.getElementById('q1_t1_max').value != 55) answered++;
+  else answered += 0.5; // default counts as half
+  const q2 = document.querySelector('input[name="q2_agree"]:checked');
+  if (q2) answered++;
+  if (document.getElementById('q3_common').value != 15) answered++;
+  else answered += 0.5;
+  const q4 = document.querySelector('input[name="q4_commercial"]:checked');
+  if (q4) answered++;
+  const q5 = document.querySelector('input[name="q5_density"]:checked');
+  if (q5) answered++;
+  const q6 = document.querySelector('input[name="q6_hpo"]:checked');
+  if (q6) answered++;
+
+  // Part 2: count parcel answers
+  total += PARCELS.length;
   for (let i = 0; i < PARCELS.length; i++) {
     const a = parcelAnswers[i];
     if (a && a.p1_realistic) answered++;
   }
 
-  // Low confidence: 4 items
+  // Part 3: 4 questions
+  total += 4;
   const s1checks = document.querySelectorAll('input[name="s1_strategy"]:checked');
   if (s1checks.length > 0) answered++;
   if (document.getElementById('s2_default_far').value != 1.5) answered++; else answered += 0.5;
   if (document.getElementById('s3_sources').value.trim()) answered++;
   if (document.getElementById('s4_systems').value.trim()) answered++;
 
+  // Part 4: 4 questions
+  total += 4;
+  if (document.getElementById('o1_overestimate').value.trim()) answered++;
+  if (document.getElementById('o2_regulations').value.trim()) answered++;
+  if (document.getElementById('o5_promising_districts').value.trim()) answered++;
+  if (document.getElementById('o6_experience').value) answered++;
+
   const pct = Math.round((answered / total) * 100);
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressLabel').textContent = pct + '% ' + (pct < 100 ? 'completado' : 'completado!');
+}
+
+// ===== SLIDER HELPERS =====
+function updateSliderVal(el) {
+  const valEl = document.getElementById(el.id + '_val');
+  if (valEl) {
+    const id = el.id;
+    if (id.includes('q3_')) {
+      valEl.textContent = el.value + '%';
+    } else {
+      valEl.textContent = el.value + ' m2';
+    }
+  }
+  updateProgress();
+}
+
+// ===== CONDITIONAL =====
+function toggleConditional(id, show) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.toggle('visible', show);
+  }
+  updateProgress();
 }
 
 // ===== FORMAT HELPERS =====
@@ -1641,15 +1987,15 @@ function renderCurrentParcel() {
     <div class="lang-en" style="font-size:13px; color:#888;">P1. Is this calculation realistic?</div>
     <div class="radio-group">
       <label class="radio-option">
-        <input type="radio" name="p_${i}_p1" value="si" ${saved.p1_realistic === 'si' ? 'checked' : ''} onchange="saveCurrentParcelAnswers(); updateProgress(); autoSave();">
+        <input type="radio" name="p_${i}_p1" value="si" ${saved.p1_realistic === 'si' ? 'checked' : ''} onchange="saveCurrentParcelAnswers(); updateProgress();">
         <div class="option-text"><span class="lang-es">Si, es realista</span><span class="lang-en">Yes, it is realistic</span></div>
       </label>
       <label class="radio-option">
-        <input type="radio" name="p_${i}_p1" value="sobreestimado" ${saved.p1_realistic === 'sobreestimado' ? 'checked' : ''} onchange="saveCurrentParcelAnswers(); updateProgress(); autoSave();">
+        <input type="radio" name="p_${i}_p1" value="sobreestimado" ${saved.p1_realistic === 'sobreestimado' ? 'checked' : ''} onchange="saveCurrentParcelAnswers(); updateProgress();">
         <div class="option-text"><span class="lang-es">Sobreestimado</span><span class="lang-en">Overestimated</span></div>
       </label>
       <label class="radio-option">
-        <input type="radio" name="p_${i}_p1" value="subestimado" ${saved.p1_realistic === 'subestimado' ? 'checked' : ''} onchange="saveCurrentParcelAnswers(); updateProgress(); autoSave();">
+        <input type="radio" name="p_${i}_p1" value="subestimado" ${saved.p1_realistic === 'subestimado' ? 'checked' : ''} onchange="saveCurrentParcelAnswers(); updateProgress();">
         <div class="option-text"><span class="lang-es">Subestimado</span><span class="lang-en">Underestimated</span></div>
       </label>
     </div>
@@ -1659,7 +2005,7 @@ function renderCurrentParcel() {
   html += `<div class="question-block">
     <div class="lang-es" style="font-weight:500;">P2. Cuantas viviendas construiria aqui?</div>
     <div class="lang-en" style="font-size:13px; color:#888;">P2. How many apartments would you build here?</div>
-    <input type="number" id="p_${i}_p2" min="0" max="9999" value="${saved.p2_apartments || ''}" style="max-width:200px;" onchange="saveCurrentParcelAnswers(); autoSave();">
+    <input type="number" id="p_${i}_p2" min="0" max="9999" value="${saved.p2_apartments || ''}" style="max-width:200px;" onchange="saveCurrentParcelAnswers();">
   </div>`;
 
   // P3
@@ -1678,7 +2024,7 @@ function renderCurrentParcel() {
   const savedFactors = saved.p3_factors || [];
   factors.forEach(f => {
     html += `<label class="checkbox-option">
-      <input type="checkbox" name="p_${i}_p3" value="${f.v}" ${savedFactors.includes(f.v) ? 'checked' : ''} onchange="saveCurrentParcelAnswers(); autoSave();">
+      <input type="checkbox" name="p_${i}_p3" value="${f.v}" ${savedFactors.includes(f.v) ? 'checked' : ''} onchange="saveCurrentParcelAnswers();">
       <div class="option-text"><span class="lang-es">${f.es}</span><span class="lang-en">${f.en}</span></div>
     </label>`;
   });
@@ -1688,7 +2034,7 @@ function renderCurrentParcel() {
   html += `<div class="question-block">
     <div class="lang-es" style="font-weight:500;">P4. Comentario libre</div>
     <div class="lang-en" style="font-size:13px; color:#888;">P4. Free comment</div>
-    <textarea id="p_${i}_p4" onchange="saveCurrentParcelAnswers(); autoSave();">${saved.p4_comment || ''}</textarea>
+    <textarea id="p_${i}_p4" onchange="saveCurrentParcelAnswers();">${saved.p4_comment || ''}</textarea>
   </div>`;
 
   html += `</div>`; // end questions
@@ -1747,13 +2093,50 @@ function gatherAllAnswers() {
 
   const answers = {
     timestamp: new Date().toISOString(),
-    survey_version: 'v3_part2',
+    survey_version: 'v2',
     respondent_name: document.getElementById('respondent-name').value || '',
     respondent_email: document.getElementById('respondent-email').value || '',
 
-    parcels: {},
+    // Part 1
+    part1_parameters: {
+      q1_apartment_sizes: {
+        T1: {min: +document.getElementById('q1_t1_min').value, max: +document.getElementById('q1_t1_max').value},
+        T2: {min: +document.getElementById('q1_t2_min').value, max: +document.getElementById('q1_t2_max').value},
+        T3: {min: +document.getElementById('q1_t3_min').value, max: +document.getElementById('q1_t3_max').value}
+      },
+      q2_apartment_mix: {
+        agree_maximize_t1: (document.querySelector('input[name="q2_agree"]:checked') || {}).value || null,
+        custom_pct: {
+          T1: +document.getElementById('q2_t1_pct').value,
+          T2: +document.getElementById('q2_t2_pct').value,
+          T3: +document.getElementById('q2_t3_pct').value
+        },
+        factors: document.getElementById('q2_factors').value
+      },
+      q3_common_areas: {
+        percentage: +document.getElementById('q3_common').value,
+        varies_comment: document.getElementById('q3_varies').value
+      },
+      q4_commercial: {
+        when_mandatory: (document.querySelector('input[name="q4_commercial"]:checked') || {}).value || null,
+        clau_zones: document.getElementById('q4_clau_text').value,
+        parking_comment: document.getElementById('q4_parking').value
+      },
+      q5_density_rule: {
+        assessment: (document.querySelector('input[name="q5_density"]:checked') || {}).value || null,
+        exceptions: document.getElementById('q5_exceptions').value
+      },
+      q6_hpo: {
+        assessment: (document.querySelector('input[name="q6_hpo"]:checked') || {}).value || null,
+        exceptions: document.getElementById('q6_exceptions').value
+      }
+    },
 
-    low_confidence: {
+    // Part 2
+    part2_parcels: {},
+
+    // Part 3
+    part3_low_confidence: {
       s1_strategies: Array.from(document.querySelectorAll('input[name="s1_strategy"]:checked')).map(c => c.value),
       s1_other: document.getElementById('s1_other_text').value,
       s2_default_far: +document.getElementById('s2_default_far').value,
@@ -1761,17 +2144,18 @@ function gatherAllAnswers() {
       s4_professional_systems: document.getElementById('s4_systems').value
     },
 
+    // Part 4
+    part4_open: {
+      o1_overestimate: document.getElementById('o1_overestimate').value,
+      o2_regulations: document.getElementById('o2_regulations').value,
+      o5_promising_districts: document.getElementById('o5_promising_districts').value,
+      o6_experience: document.getElementById('o6_experience').value
+    }
   };
 
   // Merge parcel answers
   for (let i = 0; i < PARCELS.length; i++) {
-    const a = parcelAnswers[i] || {parcel_ref: PARCELS[i].ref, p1_realistic: null, p2_apartments: null, p3_factors: [], p4_comment: ''};
-    answers.parcels[PARCELS[i].ref] = {
-      p1_realistic: a.p1_realistic,
-      p2_apartments: a.p2_apartments,
-      p3_factors: a.p3_factors,
-      p4_comment: a.p4_comment
-    };
+    answers.part2_parcels[PARCELS[i].ref] = parcelAnswers[i] || {parcel_ref: PARCELS[i].ref, p1_realistic: null, p2_apartments: null, p3_factors: [], p4_comment: ''};
   }
 
   return answers;
@@ -1780,17 +2164,33 @@ function gatherAllAnswers() {
 // ===== REVIEW =====
 function renderReview() {
   const answers = gatherAllAnswers();
+  const json = JSON.stringify(answers, null, 2);
 
   let html = `<h3 style="margin-bottom:12px;">
     <span class="lang-es">Resumen de respuestas</span>
     <span class="lang-en">Answer Summary</span>
   </h3>`;
 
-  // Parcels summary
+  // Part 1 summary
   html += `<div class="subsection">
-    <h4><span class="lang-es">Parcelas (${Object.keys(parcelAnswers).length} respondidas)</span><span class="lang-en">Parcels (${Object.keys(parcelAnswers).length} answered)</span></h4>
+    <h4><span class="lang-es">Parte 1: Parametros Generales</span><span class="lang-en">Part 1: General Parameters</span></h4>
     <table class="param-table">
-      <tr><th>Ref</th><th>P1</th><th>P2</th><th><span class="lang-es">Factores</span><span class="lang-en">Factors</span></th></tr>`;
+      <tr><td>Q1 - T1</td><td>${answers.part1_parameters.q1_apartment_sizes.T1.min}-${answers.part1_parameters.q1_apartment_sizes.T1.max} m2</td></tr>
+      <tr><td>Q1 - T2</td><td>${answers.part1_parameters.q1_apartment_sizes.T2.min}-${answers.part1_parameters.q1_apartment_sizes.T2.max} m2</td></tr>
+      <tr><td>Q1 - T3</td><td>${answers.part1_parameters.q1_apartment_sizes.T3.min}-${answers.part1_parameters.q1_apartment_sizes.T3.max} m2</td></tr>
+      <tr><td>Q2 - Mix</td><td>${answers.part1_parameters.q2_apartment_mix.agree_maximize_t1 || '-'}</td></tr>
+      <tr><td>Q3 - Zonas comunes</td><td>${answers.part1_parameters.q3_common_areas.percentage}%</td></tr>
+      <tr><td>Q4 - Comercial</td><td>${answers.part1_parameters.q4_commercial.when_mandatory || '-'}</td></tr>
+      <tr><td>Q5 - Densidad</td><td>${answers.part1_parameters.q5_density_rule.assessment || '-'}</td></tr>
+      <tr><td>Q6 - HPO</td><td>${answers.part1_parameters.q6_hpo.assessment || '-'}</td></tr>
+    </table>
+  </div>`;
+
+  // Part 2 summary
+  html += `<div class="subsection">
+    <h4><span class="lang-es">Parte 2: Parcelas (${Object.keys(parcelAnswers).length} respondidas)</span><span class="lang-en">Part 2: Parcels (${Object.keys(parcelAnswers).length} answered)</span></h4>
+    <table class="param-table">
+      <tr><th>Ref</th><th>P1</th><th>P2</th><th>Factores</th></tr>`;
   for (let i = 0; i < PARCELS.length; i++) {
     const a = parcelAnswers[i] || {};
     html += `<tr>
@@ -1802,16 +2202,31 @@ function renderReview() {
   }
   html += `</table></div>`;
 
-  // Low confidence summary
+  // Part 3 summary
   html += `<div class="subsection">
-    <h4><span class="lang-es">Confianza Baja</span><span class="lang-en">Low Confidence</span></h4>
+    <h4><span class="lang-es">Parte 3: Confianza Baja</span><span class="lang-en">Part 3: Low Confidence</span></h4>
     <table class="param-table">
-      <tr><td>S1 - <span class="lang-es">Estrategias</span><span class="lang-en">Strategies</span></td><td>${answers.low_confidence.s1_strategies.join(', ') || '-'}</td></tr>
-      <tr><td>S2 - FAR</td><td>${answers.low_confidence.s2_default_far}</td></tr>
-      <tr><td>S3 - <span class="lang-es">Fuentes</span><span class="lang-en">Sources</span></td><td>${answers.low_confidence.s3_data_sources ? 'Respondido / Answered' : '-'}</td></tr>
-      <tr><td>S4 - <span class="lang-es">Sistemas</span><span class="lang-en">Systems</span></td><td>${answers.low_confidence.s4_professional_systems ? 'Respondido / Answered' : '-'}</td></tr>
+      <tr><td>S1 - Estrategias</td><td>${answers.part3_low_confidence.s1_strategies.join(', ') || '-'}</td></tr>
+      <tr><td>S2 - FAR defecto</td><td>${answers.part3_low_confidence.s2_default_far}</td></tr>
+      <tr><td>S3 - Fuentes</td><td>${answers.part3_low_confidence.s3_data_sources ? 'Respondido' : '-'}</td></tr>
+      <tr><td>S4 - Sistemas</td><td>${answers.part3_low_confidence.s4_professional_systems ? 'Respondido' : '-'}</td></tr>
     </table>
   </div>`;
+
+  // Part 4 summary
+  html += `<div class="subsection">
+    <h4><span class="lang-es">Parte 4: Preguntas Abiertas</span><span class="lang-en">Part 4: Open Questions</span></h4>
+    <table class="param-table">
+      <tr><td>O1</td><td>${answers.part4_open.o1_overestimate ? 'Respondido' : '-'}</td></tr>
+      <tr><td>O2</td><td>${answers.part4_open.o2_regulations ? 'Respondido' : '-'}</td></tr>
+      <tr><td>O3</td><td>${answers.part4_open.o5_promising_districts ? 'Respondido' : '-'}</td></tr>
+      <tr><td>O4 - Experiencia</td><td>${answers.part4_open.o6_experience || '-'}</td></tr>
+    </table>
+  </div>`;
+
+  // JSON
+  html += `<h4 style="margin-top:20px; margin-bottom:8px;">JSON</h4>
+    <div class="review-json" id="reviewJSON">${escapeHtml(json)}</div>`;
 
   document.getElementById('reviewSummary').innerHTML = html;
 }
@@ -1822,13 +2237,26 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// ===== DOWNLOAD JSON =====
+function downloadJSON() {
+  const answers = gatherAllAnswers();
+  const json = JSON.stringify(answers, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'survey_v2_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ===== SUBMIT TO GOOGLE SHEETS =====
 async function submitToSheets() {
-  saveCurrentParcelAnswers();
-  const btns = [document.getElementById('submitBtn'), document.getElementById('floatingSubmitBtn')].filter(Boolean);
-  const statuses = [document.getElementById('submitStatus'), document.getElementById('floatingSubmitStatus')].filter(Boolean);
-  btns.forEach(b => { b.disabled = true; b.textContent = 'Enviando...'; });
-  statuses.forEach(s => { s.innerHTML = ''; });
+  const btn = document.getElementById('submitBtn');
+  const status = document.getElementById('submitStatus');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  status.innerHTML = '';
 
   const answers = gatherAllAnswers();
 
@@ -1839,23 +2267,18 @@ async function submitToSheets() {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(answers)
     });
-    statuses.forEach(s => { s.innerHTML = '<span style="color:#2e7d32;">Enviado / Submitted!</span>'; });
-    btns.forEach(b => { b.textContent = 'Enviado!'; b.disabled = false; });
-    setTimeout(() => {
-      btns.forEach(b => { b.innerHTML = '<span class="lang-es">Enviar respuestas</span><span class="lang-en">Submit answers</span>'; });
-      statuses.forEach(s => { s.innerHTML = ''; });
-    }, 3000);
+    status.innerHTML = '<div class="info-box"><span class="lang-es">Respuestas enviadas correctamente. Gracias por su participacion!</span><span class="lang-en">Answers submitted successfully. Thank you for your participation!</span></div>';
+    btn.textContent = 'Enviado!';
   } catch (err) {
-    statuses.forEach(s => { s.innerHTML = '<span style="color:#c62828;">Error</span>'; });
-    btns.forEach(b => { b.disabled = false; b.innerHTML = '<span class="lang-es">Reintentar</span><span class="lang-en">Retry</span>'; });
+    status.innerHTML = '<div class="warning-box"><span class="lang-es">Error al enviar. Por favor descargue el JSON y envie manualmente.</span><span class="lang-en">Error submitting. Please download the JSON and send manually.</span></div>';
+    btn.disabled = false;
+    btn.innerHTML = '<span class="lang-es">Reintentar</span><span class="lang-en">Retry</span>';
   }
 }
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
   setLang('es');
-  autoRestore();
-  renderCurrentParcel();
   updateProgress();
 });
 </script>
