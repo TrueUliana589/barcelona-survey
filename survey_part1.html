@@ -1279,7 +1279,7 @@ async function submitToSheets() {
     const response = await fetch('https://script.google.com/macros/s/AKfycbxXM0w5ORbZtwNq5607sNo72BHRT3zWFKlC8QRglt34jW0ApbgNNrtXwJ-CBWYw3dVTMg/exec', {
       method: 'POST',
       mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'text/plain'},
       body: JSON.stringify(answers)
     });
     statuses.forEach(s => { s.innerHTML = '<span style="color:#2e7d32;">Enviado / Submitted!</span>'; });
