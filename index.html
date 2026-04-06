@@ -37,8 +37,11 @@ h1 {
 }
 .cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 20px;
+}
+@media (max-width: 900px) {
+  .cards { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 600px) {
   .cards { grid-template-columns: 1fr; }
@@ -109,13 +112,20 @@ h1 {
     <a href="survey_part2.html" class="card">
       <div class="card-icon">🔍</div>
       <h2>Parte 2: Validación</h2>
-      <p>Revisión de 15 parcelas ejemplo, estrategia para parcelas sin datos, y su propio caso de experiencia.</p>
-      <span class="tag">~30 min · progreso guardado</span>
+      <p>Revisión de 15 parcelas ejemplo y estrategia para parcelas sin datos.</p>
+      <span class="tag">~25 min · progreso guardado</span>
+    </a>
+
+    <a href="survey_part3.html" class="card">
+      <div class="card-icon">🏗️</div>
+      <h2>Parte 3: Sus Parcelas</h2>
+      <p>Introduzca parcelas que conoce por referencia catastral. Si están en nuestra base, los datos se cargan automáticamente.</p>
+      <span class="tag">sin límite · progreso guardado</span>
     </a>
   </div>
 
   <div class="note">
-    Cada parte se envía de forma independiente. Puede completarlas en cualquier orden y en distintos momentos. La Parte 2 guarda su progreso automáticamente en el navegador.
+    Las tres partes se envían de forma independiente. Puede completarlas en cualquier orden y en distintos momentos. Las Partes 2 y 3 guardan su progreso automáticamente en el navegador.
   </div>
 </div>
 </body>

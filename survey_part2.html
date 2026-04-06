@@ -598,12 +598,8 @@ textarea { min-height: 100px; resize: vertical; }
     <span class="lang-en">2. Low Confidence</span>
   </div>
   <div class="section-tab" onclick="goToSection(2)">
-    <span class="lang-es">3. Caso Propio</span>
-    <span class="lang-en">3. Own Case</span>
-  </div>
-  <div class="section-tab" onclick="goToSection(3)">
-    <span class="lang-es">4. Revisar y Enviar</span>
-    <span class="lang-en">4. Review & Submit</span>
+    <span class="lang-es">3. Revisar y Enviar</span>
+    <span class="lang-en">3. Review & Submit</span>
   </div>
 </div>
 
@@ -756,135 +752,6 @@ textarea { min-height: 100px; resize: vertical; }
     &larr; <span class="lang-es">Parcelas</span><span class="lang-en">Parcels</span>
   </button>
   <button class="btn btn-primary" onclick="goToSection(2)">
-    <span class="lang-es">Siguiente: Caso Propio</span>
-    <span class="lang-en">Next: Own Case</span>
-    &rarr;
-  </button>
-</div>
-</div>
-
-<!-- ================================================================ -->
-<!-- ===== SECTION 3: CASO PROPIO / OWN CASE ===== -->
-<!-- ================================================================ -->
-<div class="section" id="section2">
-
-<h2 class="section-title">
-  <div class="lang-es">Seccion 3: Caso Propio: Su Experiencia</div>
-  <div class="lang-en">Section 3: Own Case: Your Experience</div>
-</h2>
-
-<p style="margin-bottom:20px; font-size:15px; color:#444;">
-  <span class="lang-es">Si tiene experiencia con un proyecto real de construccion residencial en Barcelona, comparta los datos y su logica de calculo. Esto nos ayuda a validar y mejorar nuestro algoritmo.</span>
-  <span class="lang-en">If you have experience with a real residential construction project in Barcelona, share the data and your calculation logic. This helps us validate and improve our algorithm.</span>
-</p>
-
-<div class="card">
-  <div class="card-header">
-    <h3>
-      <span class="lang-es">Datos del proyecto</span>
-      <span class="lang-en">Project data</span>
-    </h3>
-  </div>
-
-  <!-- Address -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Direccion / Address</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Address of the parcel</div>
-    <input type="text" id="case_address" placeholder="ej. Carrer de Mallorca 234, Barcelona" oninput="autoSave(); updateProgress();">
-  </div>
-
-  <!-- Area -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Superficie parcela (m2)</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Parcel area (m2)</div>
-    <input type="number" id="case_area" min="0" style="max-width:200px;" oninput="autoSave();">
-  </div>
-
-  <!-- CLAU -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">CLAU / Zona urbanistica</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">CLAU / Urban zone</div>
-    <input type="text" id="case_clau" placeholder="ej. 13b, 18, 14b..." oninput="autoSave();">
-  </div>
-
-  <!-- FAR -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Edificabilidad (FAR)</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Floor Area Ratio (FAR)</div>
-    <input type="number" id="case_far" min="0" max="10" step="0.1" style="max-width:200px;" oninput="autoSave();">
-  </div>
-
-  <!-- Floors -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Numero de plantas</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Number of floors</div>
-    <input type="number" id="case_floors" min="1" max="30" style="max-width:200px;" oninput="autoSave();">
-  </div>
-
-  <!-- Occupancy -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Ocupacion maxima (%)</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Maximum occupancy (%)</div>
-    <input type="number" id="case_ocupacio" min="0" max="100" value="60" style="max-width:200px;" oninput="autoSave();">
-  </div>
-
-  <!-- Building type -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Tipo de edificacion</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Building type</div>
-    <select id="case_building_type" onchange="autoSave();">
-      <option value="">-- Seleccione / Select --</option>
-      <option value="multi_family">Plurifamiliar / Multi-family</option>
-      <option value="row_house">Adosado / Row house</option>
-      <option value="single_family">Unifamiliar aislada / Single family</option>
-    </select>
-  </div>
-
-  <!-- Apartments -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Resultado: viviendas</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Result: apartments</div>
-    <input type="number" id="case_apartments" min="0" style="max-width:200px;" oninput="autoSave(); updateProgress();">
-  </div>
-
-  <!-- Mix -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Mix de tipologias (opcional)</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Typology mix (optional)</div>
-    <div class="inline-inputs">
-      <label>T1:</label>
-      <input type="number" id="case_t1" min="0" oninput="autoSave();">
-      <label>T2:</label>
-      <input type="number" id="case_t2" min="0" oninput="autoSave();">
-      <label>T3:</label>
-      <input type="number" id="case_t3" min="0" oninput="autoSave();">
-    </div>
-  </div>
-
-  <!-- Calculation logic -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Logica de calculo</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:4px;">Calculation logic</div>
-    <p style="font-size:14px; color:#555; margin-bottom:10px;">
-      <span class="lang-es">Describa paso a paso como llego a este resultado. Que normativas aplico? Que restricciones encontro? Como determino el FAR, la altura y la ocupacion?</span>
-      <span class="lang-en">Describe step by step how you arrived at this result. What regulations did you apply? What restrictions did you encounter? How did you determine FAR, height, and occupancy?</span>
-    </p>
-    <textarea id="case_logic" style="min-height:200px;" placeholder="..." oninput="autoSave(); updateProgress();"></textarea>
-  </div>
-
-  <!-- Additional comments -->
-  <div class="question-block">
-    <div class="lang-es" style="font-weight:500;">Comentarios adicionales</div>
-    <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Additional comments</div>
-    <textarea id="case_comments" placeholder="..." oninput="autoSave();"></textarea>
-  </div>
-</div>
-
-<div class="nav-footer">
-  <button class="btn btn-secondary" onclick="goToSection(1)">
-    &larr; <span class="lang-es">Confianza Baja</span><span class="lang-en">Low Confidence</span>
-  </button>
-  <button class="btn btn-primary" onclick="goToSection(3)">
     <span class="lang-es">Siguiente: Revisar y Enviar</span>
     <span class="lang-en">Next: Review & Submit</span>
     &rarr;
@@ -893,13 +760,13 @@ textarea { min-height: 100px; resize: vertical; }
 </div>
 
 <!-- ================================================================ -->
-<!-- ===== SECTION 4: REVIEW & SUBMIT ===== -->
+<!-- ===== SECTION 3: REVIEW & SUBMIT ===== -->
 <!-- ================================================================ -->
-<div class="section" id="section3">
+<div class="section" id="section2">
 
 <h2 class="section-title">
-  <div class="lang-es">Seccion 4: Revisar y Enviar</div>
-  <div class="lang-en">Section 4: Review & Submit</div>
+  <div class="lang-es">Seccion 3: Revisar y Enviar</div>
+  <div class="lang-en">Section 3: Review & Submit</div>
 </h2>
 
 <p style="margin-bottom:16px; font-size:14px; color:#555;">
@@ -919,8 +786,8 @@ textarea { min-height: 100px; resize: vertical; }
 <div id="submitStatus" style="margin-top:16px;"></div>
 
 <div class="nav-footer">
-  <button class="btn btn-secondary" onclick="goToSection(2)">
-    &larr; <span class="lang-es">Caso Propio</span><span class="lang-en">Own Case</span>
+  <button class="btn btn-secondary" onclick="goToSection(1)">
+    &larr; <span class="lang-es">Confianza Baja</span><span class="lang-en">Low Confidence</span>
   </button>
   <div></div>
 </div>
@@ -1502,19 +1369,6 @@ function autoSave() {
     s2_default_far: document.getElementById('s2_default_far').value,
     s3_sources: document.getElementById('s3_sources').value,
     s4_systems: document.getElementById('s4_systems').value,
-    case_address: document.getElementById('case_address').value,
-    case_area: document.getElementById('case_area').value,
-    case_clau: document.getElementById('case_clau').value,
-    case_far: document.getElementById('case_far').value,
-    case_floors: document.getElementById('case_floors').value,
-    case_ocupacio: document.getElementById('case_ocupacio').value,
-    case_building_type: document.getElementById('case_building_type').value,
-    case_apartments: document.getElementById('case_apartments').value,
-    case_t1: document.getElementById('case_t1').value,
-    case_t2: document.getElementById('case_t2').value,
-    case_t3: document.getElementById('case_t3').value,
-    case_logic: document.getElementById('case_logic').value,
-    case_comments: document.getElementById('case_comments').value,
     savedAt: new Date().toISOString()
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -1541,20 +1395,6 @@ function autoRestore() {
     if (data.s2_default_far) document.getElementById('s2_default_far').value = data.s2_default_far;
     if (data.s3_sources) document.getElementById('s3_sources').value = data.s3_sources;
     if (data.s4_systems) document.getElementById('s4_systems').value = data.s4_systems;
-
-    if (data.case_address) document.getElementById('case_address').value = data.case_address;
-    if (data.case_area) document.getElementById('case_area').value = data.case_area;
-    if (data.case_clau) document.getElementById('case_clau').value = data.case_clau;
-    if (data.case_far) document.getElementById('case_far').value = data.case_far;
-    if (data.case_floors) document.getElementById('case_floors').value = data.case_floors;
-    if (data.case_ocupacio) document.getElementById('case_ocupacio').value = data.case_ocupacio;
-    if (data.case_building_type) document.getElementById('case_building_type').value = data.case_building_type;
-    if (data.case_apartments) document.getElementById('case_apartments').value = data.case_apartments;
-    if (data.case_t1) document.getElementById('case_t1').value = data.case_t1;
-    if (data.case_t2) document.getElementById('case_t2').value = data.case_t2;
-    if (data.case_t3) document.getElementById('case_t3').value = data.case_t3;
-    if (data.case_logic) document.getElementById('case_logic').value = data.case_logic;
-    if (data.case_comments) document.getElementById('case_comments').value = data.case_comments;
 
     // Show notification
     if (data.savedAt) {
@@ -1601,7 +1441,7 @@ function goToSection(idx) {
   if (idx === 0) {
     renderCurrentParcel();
   }
-  if (idx === 3) {
+  if (idx === 2) {
     renderReview();
   }
 }
@@ -1629,7 +1469,7 @@ function updateParcelNav() {
 
 // ===== PROGRESS =====
 function updateProgress() {
-  let total = 21, answered = 0;
+  let total = 19, answered = 0;
 
   // Parcels: 15 items (count if p1 answered)
   for (let i = 0; i < PARCELS.length; i++) {
@@ -1643,14 +1483,6 @@ function updateProgress() {
   if (document.getElementById('s2_default_far').value != 1.5) answered++; else answered += 0.5;
   if (document.getElementById('s3_sources').value.trim()) answered++;
   if (document.getElementById('s4_systems').value.trim()) answered++;
-
-  // Own case: 2 items (address+apartments = 1, logic = 1)
-  const caseAddr = document.getElementById('case_address').value.trim();
-  const caseApts = document.getElementById('case_apartments').value;
-  if (caseAddr && caseApts) answered++;
-  else if (caseAddr || caseApts) answered += 0.5;
-
-  if (document.getElementById('case_logic').value.trim()) answered++;
 
   const pct = Math.round((answered / total) * 100);
   document.getElementById('progressFill').style.width = pct + '%';
@@ -1929,23 +1761,6 @@ function gatherAllAnswers() {
       s4_professional_systems: document.getElementById('s4_systems').value
     },
 
-    own_case: {
-      address: document.getElementById('case_address').value,
-      area: +document.getElementById('case_area').value || null,
-      clau: document.getElementById('case_clau').value,
-      far: +document.getElementById('case_far').value || null,
-      floors: +document.getElementById('case_floors').value || null,
-      ocupacio: +document.getElementById('case_ocupacio').value || null,
-      building_type: document.getElementById('case_building_type').value,
-      apartments: +document.getElementById('case_apartments').value || null,
-      mix: {
-        T1: +document.getElementById('case_t1').value || 0,
-        T2: +document.getElementById('case_t2').value || 0,
-        T3: +document.getElementById('case_t3').value || 0
-      },
-      logic: document.getElementById('case_logic').value,
-      comments: document.getElementById('case_comments').value
-    }
   };
 
   // Merge parcel answers
@@ -1995,20 +1810,6 @@ function renderReview() {
       <tr><td>S2 - FAR</td><td>${answers.low_confidence.s2_default_far}</td></tr>
       <tr><td>S3 - <span class="lang-es">Fuentes</span><span class="lang-en">Sources</span></td><td>${answers.low_confidence.s3_data_sources ? 'Respondido / Answered' : '-'}</td></tr>
       <tr><td>S4 - <span class="lang-es">Sistemas</span><span class="lang-en">Systems</span></td><td>${answers.low_confidence.s4_professional_systems ? 'Respondido / Answered' : '-'}</td></tr>
-    </table>
-  </div>`;
-
-  // Own case summary
-  html += `<div class="subsection">
-    <h4><span class="lang-es">Caso Propio</span><span class="lang-en">Own Case</span></h4>
-    <table class="param-table">
-      <tr><td><span class="lang-es">Direccion</span><span class="lang-en">Address</span></td><td>${answers.own_case.address || '-'}</td></tr>
-      <tr><td><span class="lang-es">Superficie</span><span class="lang-en">Area</span></td><td>${answers.own_case.area ? fmt(answers.own_case.area) + ' m2' : '-'}</td></tr>
-      <tr><td>CLAU</td><td>${answers.own_case.clau || '-'}</td></tr>
-      <tr><td>FAR</td><td>${answers.own_case.far || '-'}</td></tr>
-      <tr><td><span class="lang-es">Plantas</span><span class="lang-en">Floors</span></td><td>${answers.own_case.floors || '-'}</td></tr>
-      <tr><td><span class="lang-es">Viviendas</span><span class="lang-en">Apartments</span></td><td>${answers.own_case.apartments || '-'}</td></tr>
-      <tr><td><span class="lang-es">Logica</span><span class="lang-en">Logic</span></td><td>${answers.own_case.logic ? 'Respondido / Answered' : '-'}</td></tr>
     </table>
   </div>`;
 

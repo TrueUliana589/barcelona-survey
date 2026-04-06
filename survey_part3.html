@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuesta Parte 3 - Sus Parcelas - Barcelona Land Capacity</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="parcels_lookup.js"></script>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #f5f5f5;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 8px;
+}
+.header h1 { font-size: 20px; font-weight: 600; color: #111; }
+
+/* ===== LANGUAGE ===== */
+.lang-banner {
+  background: #e8f4fd;
+  border: 2px solid #90caf9;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.lang-banner-text { font-size: 15px; color: #1565C0; font-weight: 500; }
+.lang-toggle { display: flex; gap: 6px; }
+.lang-toggle button {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 2px solid #90caf9;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.lang-toggle button.active { background: #1976D2; color: #fff; border-color: #1976D2; }
+
+/* ===== BILINGUAL TEXT ===== */
+.lang-es { font-size: 16px; color: #1a1a1a; font-weight: 500; line-height: 1.4; margin-bottom: 2px; }
+.lang-en { font-size: 13px; color: #8c8c8c; font-weight: 400; line-height: 1.3; margin-bottom: 12px; font-style: italic; }
+h2 .lang-es { font-size: 22px; color: #111; }
+h2 .lang-en { font-size: 16px; color: #999; }
+body.hide-en .lang-en { display: none; }
+body.en-primary .lang-es { font-size: 13px; color: #8c8c8c; font-style: italic; font-weight: 400; }
+body.en-primary .lang-en { font-size: 16px; color: #1a1a1a; font-style: normal; font-weight: 500; }
+body.en-primary h2 .lang-es { font-size: 16px; color: #999; }
+body.en-primary h2 .lang-en { font-size: 22px; color: #111; }
+
+/* ===== FORM ELEMENTS ===== */
+.question-block { margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0; }
+.question-block:last-child { border-bottom: none; }
+input[type="text"], input[type="email"], input[type="number"], textarea, select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #1976D2;
+  box-shadow: 0 0 0 2px rgba(25,118,210,0.15);
+}
+textarea { min-height: 100px; resize: vertical; }
+
+/* ===== RADIO & CHECKBOX ===== */
+.radio-group, .checkbox-group { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.radio-option, .checkbox-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border: 1px solid #e0e0e0; border-radius: 6px;
+  cursor: pointer; transition: all 0.2s;
+}
+.radio-option:hover, .checkbox-option:hover { border-color: #1976D2; background: #f8fbff; }
+.radio-option input, .checkbox-option input { margin-top: 3px; flex-shrink: 0; }
+.option-text { flex: 1; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-block; padding: 12px 28px; border: none; border-radius: 6px;
+  font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.btn-primary { background: #1976D2; color: #fff; }
+.btn-primary:hover { background: #1565C0; }
+.btn-secondary { background: #fff; color: #666; border: 1px solid #ccc; }
+.btn-secondary:hover { background: #f5f5f5; }
+.btn-success { background: #2e7d32; color: #fff; }
+.btn-success:hover { background: #1b5e20; }
+.btn-danger { background: #c62828; color: #fff; }
+.btn-danger:hover { background: #b71c1c; }
+.btn-group { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== CARD ===== */
+.card {
+  border: 1px solid #e0e0e0; border-radius: 10px; padding: 24px;
+  margin-bottom: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.card-header { margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+.card-header h3 { font-size: 18px; color: #111; }
+.card-meta { font-size: 14px; color: #666; margin: 4px 0; }
+
+/* ===== PARAMETER TABLE ===== */
+.param-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+.param-table th, .param-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+.param-table th { background: #f9f9f9; font-weight: 600; font-size: 13px; color: #555; }
+.param-table td:first-child { color: #555; font-weight: 500; }
+.param-table td:last-child { color: #1a1a1a; }
+
+/* ===== TWO COLUMN ===== */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; }
+@media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ===== MAP ===== */
+.map-container { height: 250px; border-radius: 8px; overflow: hidden; margin: 16px 0; border: 1px solid #e0e0e0; }
+
+/* ===== COLLAPSIBLE ===== */
+.collapsible-toggle {
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 6px;
+  cursor: pointer; font-size: 14px; font-weight: 500; color: #444;
+  margin: 12px 0; transition: all 0.2s; width: 100%; text-align: left;
+}
+.collapsible-toggle:hover { background: #eee; }
+.collapsible-toggle .arrow { transition: transform 0.2s; }
+.collapsible-toggle.open .arrow { transform: rotate(90deg); }
+.collapsible-content {
+  display: none; padding: 16px; background: #fafafa;
+  border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 6px 6px;
+  margin-top: -13px; margin-bottom: 12px; font-size: 13px; line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word;
+}
+.collapsible-content.open { display: block; }
+
+/* ===== CALC STEPS ===== */
+.calc-step { padding: 6px 0; font-size: 13px; color: #333; font-family: 'SF Mono', 'Fira Code', monospace; }
+.calc-step .label { color: #1976D2; font-weight: 600; }
+
+/* ===== BADGE ===== */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.badge-density { background: #fff3e0; color: #e65100; }
+.badge-floor { background: #e8eaf6; color: #283593; }
+.badge-single { background: #fce4ec; color: #880e4f; }
+.badge-found { background: #e8f5e9; color: #2e7d32; }
+.badge-manual { background: #fff3e0; color: #e65100; }
+
+/* ===== INFO/WARNING BOX ===== */
+.info-box { background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 8px; padding: 16px; margin: 12px 0; font-size: 14px; }
+.warning-box { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 16px; margin: 12px 0; font-size: 14px; }
+
+/* ===== SEARCH BOX ===== */
+.search-box {
+  background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 10px;
+  padding: 20px; margin-bottom: 24px;
+}
+.search-box:focus-within { border-color: #1976D2; }
+.search-row { display: flex; gap: 12px; align-items: flex-end; }
+.search-row input { flex: 1; }
+.search-row .btn { white-space: nowrap; }
+.search-divider {
+  text-align: center; color: #999; font-size: 13px; margin: 12px 0;
+  display: flex; align-items: center; gap: 12px;
+}
+.search-divider::before, .search-divider::after {
+  content: ''; flex: 1; height: 1px; background: #e0e0e0;
+}
+
+/* ===== PARCEL LIST ===== */
+.parcel-list-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px; border: 1px solid #e0e0e0; border-radius: 8px;
+  margin-bottom: 8px; background: #fafafa; transition: all 0.2s;
+}
+.parcel-list-item:hover { border-color: #1976D2; background: #f8fbff; }
+.parcel-list-info { flex: 1; }
+.parcel-list-info .ref { font-weight: 600; font-size: 14px; color: #111; }
+.parcel-list-info .details { font-size: 13px; color: #666; margin-top: 2px; }
+.parcel-list-actions { display: flex; gap: 8px; }
+.parcel-list-actions button {
+  padding: 6px 12px; font-size: 12px; border-radius: 4px;
+  border: 1px solid #ccc; background: #fff; cursor: pointer; font-family: inherit;
+}
+.parcel-list-actions button:hover { border-color: #1976D2; }
+.parcel-list-actions .btn-del { color: #c62828; border-color: #ef9a9a; }
+.parcel-list-actions .btn-del:hover { background: #ffebee; }
+
+/* ===== RESTORE NOTIFICATION ===== */
+.restore-notification {
+  background: #e3f2fd; border: 1px solid #90caf9; border-radius: 6px;
+  padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: #1565c0;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.restore-notification button { background: none; border: none; font-size: 16px; cursor: pointer; color: #1565c0; }
+
+/* ===== INLINE INPUTS ===== */
+.inline-inputs { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.inline-inputs label { font-size: 13px; color: #555; font-weight: 500; }
+.inline-inputs input[type="number"] { width: 80px; }
+
+/* ===== SUBSECTION ===== */
+.subsection { margin-bottom: 24px; padding: 20px; background: #fafafa; border-radius: 8px; }
+
+/* ===== FLOATING SUBMIT ===== */
+.floating-submit {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+  border-top: 1px solid #e0e0e0; padding: 12px 20px;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  z-index: 1000; box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+}
+.floating-submit .btn-success { padding: 14px 40px; font-size: 16px; font-weight: 600; border-radius: 8px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  .header h1 { font-size: 16px; }
+  .card { padding: 16px; }
+  .search-row { flex-direction: column; }
+}
+</style>
+</head>
+<body class="hide-en">
+<div class="container">
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <h1>
+    <span class="lang-es">Encuesta Parte 3 - Sus Parcelas</span>
+    <span class="lang-en">Survey Part 3 - Your Parcels</span>
+  </h1>
+</div>
+
+<!-- ===== LANGUAGE ===== -->
+<div class="lang-banner">
+  <span class="lang-banner-text">Idioma / Language:</span>
+  <div class="lang-toggle">
+    <button class="active" onclick="setLang('es')">ES</button>
+    <button onclick="setLang('en')">EN</button>
+    <button onclick="setLang('both')">ES + EN</button>
+  </div>
+</div>
+
+<!-- ===== RESTORE NOTIFICATION ===== -->
+<div class="restore-notification" id="restoreNotification" style="display:none;">
+  <span id="restoreMessage"></span>
+  <button onclick="this.parentElement.style.display='none'">&times;</button>
+</div>
+
+<!-- ===== RESPONDENT INFO ===== -->
+<div style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+  <div style="flex:1; min-width:200px;">
+    <label style="font-size:13px; color:#555; font-weight:500; display:block; margin-bottom:4px;">
+      <span class="lang-es">Nombre</span><span class="lang-en">Name</span>
+    </label>
+    <input type="text" id="respondent-name" placeholder="..." oninput="autoSave();">
+  </div>
+  <div style="flex:1; min-width:200px;">
+    <label style="font-size:13px; color:#555; font-weight:500; display:block; margin-bottom:4px;">Email</label>
+    <input type="email" id="respondent-email" placeholder="..." oninput="autoSave();">
+  </div>
+</div>
+
+<!-- ===== INTRO ===== -->
+<h2 style="margin-bottom:16px;">
+  <div class="lang-es">Sus Parcelas</div>
+  <div class="lang-en">Your Parcels</div>
+</h2>
+
+<div class="info-box" style="margin-bottom:24px;">
+  <span class="lang-es">Puede anadir tantas parcelas como quiera. Introduzca la <strong>referencia catastral</strong> y si la parcela esta en nuestra base de datos (1.733 parcelas vacantes de Barcelona), los datos y nuestro calculo se cargaran automaticamente para que usted los valide. Si no esta en nuestra base, puede introducir los datos manualmente.</span>
+  <span class="lang-en">You can add as many parcels as you want. Enter the <strong>cadastral reference</strong> and if the parcel is in our database (1,733 vacant parcels in Barcelona), the data and our calculation will load automatically for you to validate. If it's not in our database, you can enter the data manually.</span>
+</div>
+
+<!-- ===== SEARCH BOX ===== -->
+<div class="search-box" id="searchBox">
+  <div class="lang-es" style="font-weight:600; margin-bottom:8px;">Buscar parcela por referencia catastral</div>
+  <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:12px;">Search parcel by cadastral reference</div>
+  <div class="search-row">
+    <input type="text" id="searchRef" placeholder="ej. 1690929DF3819B" oninput="clearSearchStatus();" onkeydown="if(event.key==='Enter')searchParcel();">
+    <button class="btn btn-primary" onclick="searchParcel();">
+      <span class="lang-es">Buscar</span>
+      <span class="lang-en">Search</span>
+    </button>
+  </div>
+  <div id="searchStatus" style="margin-top:8px; font-size:13px;"></div>
+  <div class="search-divider">
+    <span class="lang-es">o</span>
+    <span class="lang-en">or</span>
+  </div>
+  <button class="btn btn-secondary" onclick="showManualForm();" style="width:100%;">
+    <span class="lang-es">Anadir manualmente sin referencia</span>
+    <span class="lang-en">Add manually without reference</span>
+  </button>
+</div>
+
+<!-- ===== PARCEL FORM AREA (dynamically populated) ===== -->
+<div id="parcelFormArea" style="display:none;"></div>
+
+<!-- ===== SAVED PARCELS LIST ===== -->
+<div id="parcelsList"></div>
+
+<!-- ===== REVIEW & SUBMIT ===== -->
+<div id="reviewSection" style="display:none; margin-top:32px; padding-top:24px; border-top:2px solid #e0e0e0;">
+  <h2 style="margin-bottom:16px;">
+    <div class="lang-es">Revisar y Enviar</div>
+    <div class="lang-en">Review & Submit</div>
+  </h2>
+  <div id="reviewSummary"></div>
+  <div class="btn-group">
+    <button class="btn btn-success" onclick="submitToSheets()" id="submitBtn">
+      <span class="lang-es">Enviar a Google Sheets</span>
+      <span class="lang-en">Submit to Google Sheets</span>
+    </button>
+  </div>
+  <div id="submitStatus" style="margin-top:16px;"></div>
+</div>
+
+</div><!-- end container -->
+
+<!-- ===== FLOATING SUBMIT ===== -->
+<div class="floating-submit" id="floatingSubmit" style="display:none;">
+  <button class="btn btn-success" onclick="submitToSheets()" id="floatingSubmitBtn">
+    <span class="lang-es">Enviar respuestas</span>
+    <span class="lang-en">Submit answers</span>
+  </button>
+  <span class="submit-status" id="floatingSubmitStatus"></span>
+</div>
+
+<script>
+// ===== STATE =====
+const STORAGE_KEY = 'survey_part3_v1';
+let customParcels = []; // Array of saved parcel objects
+let editingIndex = -1; // -1 = adding new, >= 0 = editing existing
+let currentMap = null;
+
+// ===== LANGUAGE =====
+function setLang(mode) {
+  document.body.classList.remove('hide-en', 'en-primary');
+  document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.remove('active'));
+  if (mode === 'es') {
+    document.body.classList.add('hide-en');
+    document.querySelectorAll('.lang-toggle button')[0].classList.add('active');
+  } else if (mode === 'en') {
+    document.body.classList.add('en-primary');
+    document.querySelectorAll('.lang-toggle button')[1].classList.add('active');
+  } else {
+    document.querySelectorAll('.lang-toggle button')[2].classList.add('active');
+  }
+}
+
+// ===== FORMAT HELPERS =====
+function fmt(v, decimals) {
+  if (v === null || v === undefined) return '-';
+  return Number(v).toLocaleString('es-ES', {minimumFractionDigits: decimals || 0, maximumFractionDigits: decimals || 0});
+}
+
+function fmtSource(s) {
+  if (!s) return '-';
+  const map = { 'piu_plan': 'Plan PIU', 'clau_default': 'CLAU default', 'parsed': 'Parsed WMS', 'street_width': 'Ancho de calle' };
+  return map[s] || s;
+}
+
+function factorBadge(f) {
+  const map = {
+    'density_80': {cls: 'badge-density', label: 'Densidad (80 m2)'},
+    'floor_plan': {cls: 'badge-floor', label: 'Planta tipo'},
+    'single_family': {cls: 'badge-single', label: 'Unifamiliar'}
+  };
+  const info = map[f] || {cls: '', label: f || '-'};
+  return `<span class="badge ${info.cls}">${info.label}</span>`;
+}
+
+// ===== COLLAPSIBLE =====
+function toggleCollapsible(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+// ===== SEARCH =====
+function clearSearchStatus() {
+  document.getElementById('searchStatus').innerHTML = '';
+}
+
+function searchParcel() {
+  const ref = document.getElementById('searchRef').value.trim().toUpperCase();
+  if (!ref) return;
+
+  const statusEl = document.getElementById('searchStatus');
+
+  if (typeof PARCELS_DB === 'undefined') {
+    statusEl.innerHTML = '<span style="color:#c62828;">Error: base de datos no cargada / Database not loaded</span>';
+    return;
+  }
+
+  const found = PARCELS_DB[ref];
+  if (found) {
+    statusEl.innerHTML = '<span style="color:#2e7d32;">&#10004; <span class="lang-es">Encontrada en nuestra base</span><span class="lang-en">Found in our database</span></span>';
+    showFoundParcelForm(found);
+  } else {
+    statusEl.innerHTML = '<span style="color:#e65100;">&#10008; <span class="lang-es">No encontrada. Puede introducir los datos manualmente.</span><span class="lang-en">Not found. You can enter the data manually.</span></span>';
+    showManualForm(ref);
+  }
+}
+
+// ===== SHOW FOUND PARCEL FORM =====
+function showFoundParcelForm(p) {
+  const area = document.getElementById('parcelFormArea');
+  area.style.display = 'block';
+
+  // Compute calculation steps
+  const step1_gfa_raw = p.area * p.far;
+  const step2_gfa = p.sostre_max ? Math.min(step1_gfa_raw, p.sostre_max) : step1_gfa_raw;
+  const commonPct = p.building_type === 'single_family' ? 0 : 0.15;
+  const step3_net = step2_gfa * (1 - commonPct);
+  const step4_density = Math.floor(step2_gfa / 80);
+  const avgApt = 69;
+  const step5_layout = Math.floor(step3_net / avgApt);
+
+  let html = `<div class="card">
+    <div class="card-header">
+      <h3><span class="badge badge-found">&#10004; <span class="lang-es">En nuestra base</span><span class="lang-en">In our database</span></span></h3>
+      <div class="card-meta" style="margin-top:8px;"><strong>${p.ref}</strong></div>
+      <div class="card-meta">${p.district || ''}${p.barri ? ' / ' + p.barri : ''}</div>
+      <div class="card-meta">CLAU ${p.clau}${p.clau_name ? ' — ' + p.clau_name : ''}</div>
+      ${p.address ? '<div class="card-meta">' + p.address + '</div>' : ''}
+      ${p.confidence ? '<div class="card-meta"><span class="lang-es">Confianza</span><span class="lang-en">Confidence</span>: ' + p.confidence.toUpperCase() + '</div>' : ''}
+    </div>`;
+
+  // Map
+  if (p.lat && p.lng) {
+    html += `<div class="map-container" id="parcelMap"></div>`;
+  }
+
+  // Two column tables
+  html += `<div class="two-col">`;
+  html += `<div>
+    <h4 style="font-size:15px; margin-bottom:8px;">
+      <span class="lang-es">Datos de Entrada</span><span class="lang-en">Input Data</span>
+    </h4>
+    <table class="param-table">
+      <tr><td><span class="lang-es">Superficie</span><span class="lang-en">Area</span></td><td>${fmt(p.area)} m2</td></tr>
+      <tr><td>FAR</td><td>${p.far} <small style="color:#888">(${fmtSource(p.far_source)})</small></td></tr>
+      <tr><td><span class="lang-es">Altura</span><span class="lang-en">Height</span></td><td>${p.height ? fmt(p.height, 1) + ' m' : '-'} <small style="color:#888">(${fmtSource(p.height_source)})</small></td></tr>
+      <tr><td><span class="lang-es">Plantas</span><span class="lang-en">Floors</span></td><td>${p.floors || '-'}</td></tr>
+      <tr><td><span class="lang-es">Ocupacion</span><span class="lang-en">Occupancy</span></td><td>${p.ocupacio ? (p.ocupacio * 100).toFixed(0) + '%' : '-'}</td></tr>
+      ${p.street_width ? '<tr><td><span class="lang-es">Ancho calle</span><span class="lang-en">Street width</span></td><td>' + fmt(p.street_width, 1) + ' m</td></tr>' : ''}
+      ${p.sostre_max ? '<tr><td>Sostre max</td><td>' + fmt(p.sostre_max) + ' m2</td></tr>' : ''}
+    </table>
+  </div>`;
+
+  html += `<div>
+    <h4 style="font-size:15px; margin-bottom:8px;">
+      <span class="lang-es">Resultado del Calculo</span><span class="lang-en">Calculation Result</span>
+    </h4>
+    <table class="param-table">
+      <tr><td>GFA</td><td><strong>${fmt(p.gfa_total, 1)} m2</strong></td></tr>
+      <tr><td><span class="lang-es">Superficie neta</span><span class="lang-en">Net area</span></td><td>${fmt(p.net_residential, 1)} m2</td></tr>
+      <tr><td><span class="lang-es">Max viviendas</span><span class="lang-en">Max apartments</span></td><td><strong style="font-size:18px; color:#1976D2;">${p.max_apartments}</strong></td></tr>
+      <tr><td>Mix T1/T2/T3</td><td>${p.mix ? p.mix.T1 + ' / ' + p.mix.T2 + ' / ' + p.mix.T3 : '-'}</td></tr>
+      <tr><td><span class="lang-es">Factor limitante</span><span class="lang-en">Limiting factor</span></td><td>${factorBadge(p.limiting_factor)}</td></tr>
+      <tr><td>HPO</td><td>${p.hpo_required ? p.hpo_required + ' viviendas' : 'No'}</td></tr>
+      <tr><td><span class="lang-es">Aparcamiento</span><span class="lang-en">Parking</span></td><td>${p.parking_spots ? p.parking_spots + ' plazas' : '-'}</td></tr>
+    </table>
+  </div>`;
+  html += `</div>`;
+
+  // Calc steps
+  html += `<button class="collapsible-toggle" onclick="toggleCollapsible(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="lang-es">Ver pasos del calculo</span><span class="lang-en">View calculation steps</span>
+  </button>
+  <div class="collapsible-content">`;
+  html += `<div class="calc-step"><span class="label">Paso 1:</span> GFA = Area x FAR = ${fmt(p.area)} x ${p.far} = ${fmt(step1_gfa_raw, 1)} m2</div>`;
+  if (p.sostre_max) {
+    html += `<div class="calc-step"><span class="label">Paso 2:</span> Sostre max = ${fmt(p.sostre_max)} m2 -> GFA = min(${fmt(step1_gfa_raw, 1)}, ${fmt(p.sostre_max)}) = ${fmt(step2_gfa, 1)} m2</div>`;
+  }
+  if (p.building_type === 'single_family') {
+    html += `<div class="calc-step"><span class="label">Paso 3:</span> Unifamiliar -> 1 vivienda</div>`;
+  } else {
+    html += `<div class="calc-step"><span class="label">Paso 3:</span> Neta = GFA x 0.85 = ${fmt(step3_net, 1)} m2</div>`;
+    html += `<div class="calc-step"><span class="label">Paso 4:</span> Densidad: ${fmt(step2_gfa, 1)} / 80 = ${step4_density}</div>`;
+    html += `<div class="calc-step"><span class="label">Paso 5:</span> Planta: ${fmt(step3_net, 1)} / 69 = ${step5_layout}</div>`;
+    html += `<div class="calc-step"><span class="label">Paso 6:</span> Final = min(${step4_density}, ${step5_layout}) = ${p.max_apartments}</div>`;
+  }
+  html += `</div>`;
+
+  // WMS data
+  if (p.wms_alcades) {
+    html += `<button class="collapsible-toggle" onclick="toggleCollapsible(this)">
+      <span class="arrow">&#9654;</span>
+      <span class="lang-es">Datos WMS</span><span class="lang-en">WMS data</span>
+    </button>
+    <div class="collapsible-content">${p.wms_alcades}</div>`;
+  }
+
+  // Questions P1-P4
+  html += renderQuestions('found', p.ref);
+
+  // Save button
+  html += `<div class="btn-group">
+    <button class="btn btn-primary" onclick="saveCurrentParcel('found');">
+      <span class="lang-es">Guardar parcela</span><span class="lang-en">Save parcel</span>
+    </button>
+    <button class="btn btn-secondary" onclick="cancelForm();">
+      <span class="lang-es">Cancelar</span><span class="lang-en">Cancel</span>
+    </button>
+  </div>`;
+
+  html += `</div>`;
+  area.innerHTML = html;
+
+  // Store current parcel data for saving
+  area.dataset.parcelData = JSON.stringify(p);
+  area.dataset.source = 'db';
+
+  // Init map
+  if (p.lat && p.lng) {
+    setTimeout(() => {
+      const el = document.getElementById('parcelMap');
+      if (el) {
+        if (currentMap) currentMap.remove();
+        currentMap = L.map('parcelMap').setView([p.lat, p.lng], 17);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap', maxZoom: 19
+        }).addTo(currentMap);
+        L.marker([p.lat, p.lng]).addTo(currentMap).bindPopup(`<b>${p.ref}</b><br>${p.district || ''}`).openPopup();
+      }
+    }, 100);
+  }
+
+  area.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+// ===== SHOW MANUAL FORM =====
+function showManualForm(ref) {
+  const area = document.getElementById('parcelFormArea');
+  area.style.display = 'block';
+
+  let html = `<div class="card">
+    <div class="card-header">
+      <h3><span class="badge badge-manual">
+        <span class="lang-es">Entrada manual</span><span class="lang-en">Manual entry</span>
+      </span></h3>
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Referencia catastral (opcional)</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Cadastral reference (optional)</div>
+      <input type="text" id="manual_ref" value="${ref || ''}" placeholder="ej. 1690929DF3819B">
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Direccion / Address</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Address of the parcel</div>
+      <input type="text" id="manual_address" placeholder="ej. Carrer de Mallorca 234, Barcelona">
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Superficie parcela (m2)</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Parcel area (m2)</div>
+      <input type="number" id="manual_area" min="0" style="max-width:200px;">
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">CLAU / Zona urbanistica</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">CLAU / Urban zone</div>
+      <input type="text" id="manual_clau" placeholder="ej. 13b, 18, 14b...">
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Edificabilidad (FAR)</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Floor Area Ratio (FAR)</div>
+      <input type="number" id="manual_far" min="0" max="10" step="0.1" style="max-width:200px;">
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Numero de plantas</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Number of floors</div>
+      <input type="number" id="manual_floors" min="1" max="30" style="max-width:200px;">
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Ocupacion maxima (%)</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Maximum occupancy (%)</div>
+      <input type="number" id="manual_ocupacio" min="0" max="100" value="60" style="max-width:200px;">
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Tipo de edificacion</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Building type</div>
+      <select id="manual_building_type">
+        <option value="">-- Seleccione / Select --</option>
+        <option value="multi_family">Plurifamiliar / Multi-family</option>
+        <option value="row_house">Adosado / Row house</option>
+        <option value="single_family">Unifamiliar aislada / Single family</option>
+      </select>
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Resultado: viviendas (su calculo)</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Result: apartments (your calculation)</div>
+      <input type="number" id="manual_apartments" min="0" style="max-width:200px;">
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Mix de tipologias (opcional)</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Typology mix (optional)</div>
+      <div class="inline-inputs">
+        <label>T1:</label><input type="number" id="manual_t1" min="0">
+        <label>T2:</label><input type="number" id="manual_t2" min="0">
+        <label>T3:</label><input type="number" id="manual_t3" min="0">
+      </div>
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Logica de calculo</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:4px;">Calculation logic</div>
+      <p style="font-size:14px; color:#555; margin-bottom:10px;">
+        <span class="lang-es">Describa paso a paso como llego a este resultado.</span>
+        <span class="lang-en">Describe step by step how you arrived at this result.</span>
+      </p>
+      <textarea id="manual_logic" style="min-height:150px;" placeholder="..."></textarea>
+    </div>
+
+    <div class="question-block">
+      <div class="lang-es" style="font-weight:500;">Comentarios adicionales</div>
+      <div class="lang-en" style="font-size:13px; color:#888; margin-bottom:8px;">Additional comments</div>
+      <textarea id="manual_comments" placeholder="..."></textarea>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="saveCurrentParcel('manual');">
+        <span class="lang-es">Guardar parcela</span><span class="lang-en">Save parcel</span>
+      </button>
+      <button class="btn btn-secondary" onclick="cancelForm();">
+        <span class="lang-es">Cancelar</span><span class="lang-en">Cancel</span>
+      </button>
+    </div>
+  </div>`;
+
+  area.innerHTML = html;
+  area.dataset.source = 'manual';
+  area.dataset.parcelData = '';
+  area.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+// ===== RENDER QUESTIONS (for found parcels) =====
+function renderQuestions(prefix, ref) {
+  const saved = (editingIndex >= 0 && customParcels[editingIndex]) ? customParcels[editingIndex].answers || {} : {};
+
+  let html = `<div style="margin-top:20px; padding-top:16px; border-top:2px solid #e0e0e0;">
+    <h4 style="margin-bottom:12px;">
+      <span class="lang-es">Preguntas sobre esta parcela</span>
+      <span class="lang-en">Questions about this parcel</span>
+    </h4>`;
+
+  // P1
+  html += `<div class="question-block">
+    <div class="lang-es" style="font-weight:500;">P1. Es realista este calculo?</div>
+    <div class="lang-en" style="font-size:13px; color:#888;">P1. Is this calculation realistic?</div>
+    <div class="radio-group">
+      <label class="radio-option">
+        <input type="radio" name="q_p1" value="si" ${saved.p1_realistic === 'si' ? 'checked' : ''}>
+        <div class="option-text"><span class="lang-es">Si, es realista</span><span class="lang-en">Yes, realistic</span></div>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="q_p1" value="sobreestimado" ${saved.p1_realistic === 'sobreestimado' ? 'checked' : ''}>
+        <div class="option-text"><span class="lang-es">Sobreestimado</span><span class="lang-en">Overestimated</span></div>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="q_p1" value="subestimado" ${saved.p1_realistic === 'subestimado' ? 'checked' : ''}>
+        <div class="option-text"><span class="lang-es">Subestimado</span><span class="lang-en">Underestimated</span></div>
+      </label>
+    </div>
+  </div>`;
+
+  // P2
+  html += `<div class="question-block">
+    <div class="lang-es" style="font-weight:500;">P2. Cuantas viviendas construiria aqui?</div>
+    <div class="lang-en" style="font-size:13px; color:#888;">P2. How many apartments would you build here?</div>
+    <input type="number" id="q_p2" min="0" max="9999" value="${saved.p2_apartments || ''}" style="max-width:200px;">
+  </div>`;
+
+  // P3
+  const factors = [
+    {v: 'topografia', es: 'Topografia', en: 'Topography'},
+    {v: 'accesos', es: 'Accesos', en: 'Access'},
+    {v: 'servidumbres', es: 'Servidumbres', en: 'Easements'},
+    {v: 'patrimonio', es: 'Patrimonio', en: 'Heritage'},
+    {v: 'contaminacion', es: 'Contaminacion', en: 'Contamination'},
+    {v: 'otros', es: 'Otros', en: 'Others'}
+  ];
+  const savedFactors = saved.p3_factors || [];
+  html += `<div class="question-block">
+    <div class="lang-es" style="font-weight:500;">P3. Que factores faltan?</div>
+    <div class="lang-en" style="font-size:13px; color:#888;">P3. What factors are missing?</div>
+    <div class="checkbox-group">`;
+  factors.forEach(f => {
+    html += `<label class="checkbox-option">
+      <input type="checkbox" name="q_p3" value="${f.v}" ${savedFactors.includes(f.v) ? 'checked' : ''}>
+      <div class="option-text"><span class="lang-es">${f.es}</span><span class="lang-en">${f.en}</span></div>
+    </label>`;
+  });
+  html += `</div></div>`;
+
+  // P4
+  html += `<div class="question-block">
+    <div class="lang-es" style="font-weight:500;">P4. Comentario</div>
+    <div class="lang-en" style="font-size:13px; color:#888;">P4. Comment</div>
+    <textarea id="q_p4">${saved.p4_comment || ''}</textarea>
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+// ===== SAVE CURRENT PARCEL =====
+function saveCurrentParcel(source) {
+  const area = document.getElementById('parcelFormArea');
+  let parcel = {};
+
+  if (source === 'found') {
+    const dbData = JSON.parse(area.dataset.parcelData);
+    const p1 = document.querySelector('input[name="q_p1"]:checked');
+    parcel = {
+      source: 'db',
+      ref: dbData.ref,
+      dbData: dbData,
+      answers: {
+        p1_realistic: p1 ? p1.value : null,
+        p2_apartments: document.getElementById('q_p2').value || null,
+        p3_factors: Array.from(document.querySelectorAll('input[name="q_p3"]:checked')).map(c => c.value),
+        p4_comment: document.getElementById('q_p4').value || ''
+      }
+    };
+  } else {
+    parcel = {
+      source: 'manual',
+      ref: document.getElementById('manual_ref').value.trim() || null,
+      manualData: {
+        address: document.getElementById('manual_address').value,
+        area: +document.getElementById('manual_area').value || null,
+        clau: document.getElementById('manual_clau').value,
+        far: +document.getElementById('manual_far').value || null,
+        floors: +document.getElementById('manual_floors').value || null,
+        ocupacio: +document.getElementById('manual_ocupacio').value || null,
+        building_type: document.getElementById('manual_building_type').value,
+        apartments: +document.getElementById('manual_apartments').value || null,
+        mix: {
+          T1: +document.getElementById('manual_t1').value || 0,
+          T2: +document.getElementById('manual_t2').value || 0,
+          T3: +document.getElementById('manual_t3').value || 0
+        },
+        logic: document.getElementById('manual_logic').value,
+        comments: document.getElementById('manual_comments').value
+      }
+    };
+  }
+
+  if (editingIndex >= 0) {
+    customParcels[editingIndex] = parcel;
+    editingIndex = -1;
+  } else {
+    customParcels.push(parcel);
+  }
+
+  cancelForm();
+  renderParcelsList();
+  autoSave();
+}
+
+// ===== CANCEL FORM =====
+function cancelForm() {
+  const area = document.getElementById('parcelFormArea');
+  area.style.display = 'none';
+  area.innerHTML = '';
+  if (currentMap) { currentMap.remove(); currentMap = null; }
+  editingIndex = -1;
+  document.getElementById('searchRef').value = '';
+  clearSearchStatus();
+}
+
+// ===== REMOVE / EDIT =====
+function removeCustomParcel(idx) {
+  customParcels.splice(idx, 1);
+  renderParcelsList();
+  autoSave();
+}
+
+function editCustomParcel(idx) {
+  editingIndex = idx;
+  const p = customParcels[idx];
+  if (p.source === 'db') {
+    showFoundParcelForm(p.dbData);
+  } else {
+    showManualForm(p.ref);
+    // Fill in manual fields
+    setTimeout(() => {
+      const d = p.manualData || {};
+      if (d.address) document.getElementById('manual_address').value = d.address;
+      if (d.area) document.getElementById('manual_area').value = d.area;
+      if (d.clau) document.getElementById('manual_clau').value = d.clau;
+      if (d.far) document.getElementById('manual_far').value = d.far;
+      if (d.floors) document.getElementById('manual_floors').value = d.floors;
+      if (d.ocupacio) document.getElementById('manual_ocupacio').value = d.ocupacio;
+      if (d.building_type) document.getElementById('manual_building_type').value = d.building_type;
+      if (d.apartments) document.getElementById('manual_apartments').value = d.apartments;
+      if (d.mix) {
+        if (d.mix.T1) document.getElementById('manual_t1').value = d.mix.T1;
+        if (d.mix.T2) document.getElementById('manual_t2').value = d.mix.T2;
+        if (d.mix.T3) document.getElementById('manual_t3').value = d.mix.T3;
+      }
+      if (d.logic) document.getElementById('manual_logic').value = d.logic;
+      if (d.comments) document.getElementById('manual_comments').value = d.comments;
+      if (p.ref) document.getElementById('manual_ref').value = p.ref;
+    }, 50);
+  }
+}
+
+// ===== RENDER PARCELS LIST =====
+function renderParcelsList() {
+  const container = document.getElementById('parcelsList');
+
+  if (customParcels.length === 0) {
+    container.innerHTML = '';
+    document.getElementById('reviewSection').style.display = 'none';
+    document.getElementById('floatingSubmit').style.display = 'none';
+    return;
+  }
+
+  let html = `<h3 style="margin-bottom:12px; margin-top:24px;">
+    <span class="lang-es">Parcelas guardadas (${customParcels.length})</span>
+    <span class="lang-en">Saved parcels (${customParcels.length})</span>
+  </h3>`;
+
+  customParcels.forEach((p, i) => {
+    const label = p.source === 'db'
+      ? `${p.ref} — ${p.dbData.district || ''} — ${p.dbData.max_apartments} <span class="lang-es">viviendas</span><span class="lang-en">apts</span>`
+      : `${p.ref || 'Manual'} — ${(p.manualData || {}).address || '?'} — ${(p.manualData || {}).apartments || '?'} <span class="lang-es">viviendas</span><span class="lang-en">apts</span>`;
+
+    const badge = p.source === 'db'
+      ? '<span class="badge badge-found">DB</span>'
+      : '<span class="badge badge-manual">Manual</span>';
+
+    html += `<div class="parcel-list-item">
+      <div class="parcel-list-info">
+        <div class="ref">#${i + 1} ${badge} ${label}</div>
+      </div>
+      <div class="parcel-list-actions">
+        <button onclick="editCustomParcel(${i})">
+          <span class="lang-es">Editar</span><span class="lang-en">Edit</span>
+        </button>
+        <button class="btn-del" onclick="removeCustomParcel(${i})">
+          <span class="lang-es">Eliminar</span><span class="lang-en">Delete</span>
+        </button>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+
+  // Show review & floating submit
+  document.getElementById('reviewSection').style.display = 'block';
+  document.getElementById('floatingSubmit').style.display = 'flex';
+  renderReview();
+}
+
+// ===== GATHER ANSWERS =====
+function gatherAllAnswers() {
+  return {
+    timestamp: new Date().toISOString(),
+    survey_version: 'v3_part3',
+    respondent_name: document.getElementById('respondent-name').value || '',
+    respondent_email: document.getElementById('respondent-email').value || '',
+    custom_parcels: customParcels.map(p => {
+      if (p.source === 'db') {
+        return {
+          source: 'db',
+          ref: p.ref,
+          district: p.dbData.district,
+          our_apartments: p.dbData.max_apartments,
+          confidence: p.dbData.confidence,
+          answers: p.answers
+        };
+      } else {
+        return {
+          source: 'manual',
+          ref: p.ref,
+          data: p.manualData
+        };
+      }
+    })
+  };
+}
+
+// ===== REVIEW =====
+function renderReview() {
+  const answers = gatherAllAnswers();
+  let html = `<div class="subsection">
+    <table class="param-table">
+      <tr><th>#</th><th>Ref</th><th><span class="lang-es">Tipo</span><span class="lang-en">Type</span></th><th><span class="lang-es">Viviendas</span><span class="lang-en">Apts</span></th><th>P1</th></tr>`;
+
+  answers.custom_parcels.forEach((p, i) => {
+    const apts = p.source === 'db' ? p.our_apartments : ((p.data || {}).apartments || '-');
+    const p1 = p.source === 'db' ? ((p.answers || {}).p1_realistic || '-') : '-';
+    html += `<tr>
+      <td>${i + 1}</td>
+      <td>${(p.ref || 'Manual').substring(0, 14)}</td>
+      <td>${p.source === 'db' ? 'DB' : 'Manual'}</td>
+      <td>${apts}</td>
+      <td>${p1}</td>
+    </tr>`;
+  });
+
+  html += `</table></div>`;
+  document.getElementById('reviewSummary').innerHTML = html;
+}
+
+// ===== AUTO SAVE / RESTORE =====
+function autoSave() {
+  const data = {
+    respondent_name: document.getElementById('respondent-name').value,
+    respondent_email: document.getElementById('respondent-email').value,
+    customParcels: customParcels,
+    savedAt: new Date().toISOString()
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function autoRestore() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    if (data.respondent_name) document.getElementById('respondent-name').value = data.respondent_name;
+    if (data.respondent_email) document.getElementById('respondent-email').value = data.respondent_email;
+    if (data.customParcels && data.customParcels.length > 0) {
+      customParcels = data.customParcels;
+      renderParcelsList();
+    }
+    if (data.savedAt) {
+      const d = new Date(data.savedAt);
+      const dateStr = d.toLocaleDateString('es-ES') + ' ' + d.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+      const notif = document.getElementById('restoreNotification');
+      document.getElementById('restoreMessage').innerHTML =
+        '<span class="lang-es">Datos restaurados del ' + dateStr + '.</span> ' +
+        '<span class="lang-en">Data restored from ' + dateStr + '.</span>';
+      notif.style.display = 'flex';
+    }
+  } catch (e) {}
+}
+
+// ===== SUBMIT =====
+async function submitToSheets() {
+  if (customParcels.length === 0) return;
+
+  const btns = [document.getElementById('submitBtn'), document.getElementById('floatingSubmitBtn')].filter(Boolean);
+  const statuses = [document.getElementById('submitStatus'), document.getElementById('floatingSubmitStatus')].filter(Boolean);
+  btns.forEach(b => { b.disabled = true; b.textContent = 'Enviando...'; });
+
+  const answers = gatherAllAnswers();
+
+  try {
+    await fetch('https://script.google.com/macros/s/AKfycbxMZguj4JsBh-sbd8A9Taw5izEeNB6YyQxiHNLBmwrSbRRizfwM_QLY6qHoM9qODriQ7w/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(answers)
+    });
+    statuses.forEach(s => { s.innerHTML = '<span style="color:#2e7d32;">Enviado / Submitted!</span>'; });
+    btns.forEach(b => { b.textContent = 'Enviado!'; b.disabled = false; });
+    setTimeout(() => {
+      btns.forEach(b => { b.innerHTML = '<span class="lang-es">Enviar respuestas</span><span class="lang-en">Submit answers</span>'; });
+      statuses.forEach(s => { s.innerHTML = ''; });
+    }, 3000);
+  } catch (err) {
+    statuses.forEach(s => { s.innerHTML = '<span style="color:#c62828;">Error</span>'; });
+    btns.forEach(b => { b.disabled = false; b.innerHTML = '<span class="lang-es">Reintentar</span><span class="lang-en">Retry</span>'; });
+  }
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  setLang('es');
+  autoRestore();
+});
+</script>
+</body>
+</html>
